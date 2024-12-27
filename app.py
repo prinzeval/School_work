@@ -10,6 +10,7 @@ from PyQt6.QtGui import QPixmap, QFont
 
 # Database connection function
 def connect_db():
+    # Connects to MySQL database with the given parameters
     return mysql.connector.connect(
         host="localhost",
         port=3306,
@@ -22,18 +23,18 @@ class AutoShopManagementApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Auto Shop Management System")
-        self.setGeometry(200, 200, 1200, 800)
+        self.setGeometry(200, 200, 1200, 800)  # Set window title and size
 
-        self.stack = QStackedWidget()
+        self.stack = QStackedWidget()  # Initialize stacked widget for pages
         self.setCentralWidget(self.stack)
 
         self.main_page = QWidget()
         self.create_main_page()
-        self.stack.addWidget(self.main_page)
+        self.stack.addWidget(self.main_page)  # Add main page to stack
 
         self.customer_page = QWidget()
         self.create_customer_page()
-        self.stack.addWidget(self.customer_page)
+        self.stack.addWidget(self.customer_page)  # Add customer page to stack
 
     def create_main_page(self):
         main_layout = QVBoxLayout(self.main_page)
@@ -98,7 +99,7 @@ class AutoShopManagementApp(QMainWindow):
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.next_vehicle_image)
-        self.timer.start(9000)
+        self.timer.start(2000)  # Change image every 2 seconds
 
     def create_customer_page(self):
         layout = QVBoxLayout(self.customer_page)
@@ -145,7 +146,7 @@ class AutoShopManagementApp(QMainWindow):
             font-weight: bold;
         """)
         if on_click:
-            container.clicked.connect(on_click)
+            container.clicked.connect(on_click)  # Connect button to function if provided
         layout.addWidget(container, row, col)
 
     def add_table(self, table_widget, table_name):
