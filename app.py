@@ -1,5 +1,4 @@
 import sys
-import mysql.connector
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QWidget,
     QPushButton, QLabel, QLineEdit, QTableWidget, QTableWidgetItem,
@@ -7,34 +6,24 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap, QFont
-
-# Database connection function
-def connect_db():
-    # Connects to MySQL database with the given parameters
-    return mysql.connector.connect(
-        host="localhost",
-        port=3306,
-        user="root",
-        password="Vondabaic2020",
-        database="Autoshop"
-    )
+from controller import connect_db, fetch_vehicle_images, populate_table
 
 class AutoShopManagementApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Auto Shop Management System")
-        self.setGeometry(200, 200, 1200, 800)  # Set window title and size
+        self.setGeometry(200, 200, 1200, 800)
 
-        self.stack = QStackedWidget()  # Initialize stacked widget for pages
+        self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
 
         self.main_page = QWidget()
         self.create_main_page()
-        self.stack.addWidget(self.main_page)  # Add main page to stack
+        self.stack.addWidget(self.main_page)
 
         self.customer_page = QWidget()
         self.create_customer_page()
-        self.stack.addWidget(self.customer_page)  # Add customer page to stack
+        self.stack.addWidget(self.customer_page)
 
     def create_main_page(self):
         main_layout = QVBoxLayout(self.main_page)
@@ -93,13 +82,13 @@ class AutoShopManagementApp(QMainWindow):
         main_layout.addWidget(splitter)
 
         # Start image carousel
-        self.vehicle_images = self.fetch_vehicle_images()
+        self.vehicle_images = fetch_vehicle_images()
         self.current_image_index = 0
         self.update_vehicle_image()
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.next_vehicle_image)
-        self.timer.start(2000)  # Change image every 2 seconds
+        self.timer.start(9000)
 
     def create_customer_page(self):
         layout = QVBoxLayout(self.customer_page)
@@ -132,7 +121,7 @@ class AutoShopManagementApp(QMainWindow):
         self.customer_table.setHorizontalHeaderLabels(["Customer ID", "Name", "Email", "Phone Number", "Address"])
         layout.addWidget(self.customer_table)
 
-        self.populate_table(self.customer_table, "Operations_Customer")
+        populate_table(self.customer_table, "Operations_Customer")
 
     def add_container(self, layout, text, row, col, on_click=None):
         container = QPushButton(text)
@@ -146,38 +135,13 @@ class AutoShopManagementApp(QMainWindow):
             font-weight: bold;
         """)
         if on_click:
-            container.clicked.connect(on_click)  # Connect button to function if provided
+            container.clicked.connect(on_click)
         layout.addWidget(container, row, col)
 
     def add_table(self, table_widget, table_name):
         table = QTableWidget()
-        self.populate_table(table, table_name)
+        populate_table(table, table_name)
         table_widget.addTab(table, table_name.split('_')[1])
-
-    def populate_table(self, table, table_name):
-        connection = connect_db()
-        cursor = connection.cursor()
-        cursor.execute(f"SELECT * FROM {table_name}")
-        records = cursor.fetchall()
-
-        table.setRowCount(len(records))
-        table.setColumnCount(len(records[0]))
-
-        for row_index, row_data in enumerate(records):
-            for column_index, data in enumerate(row_data):
-                table.setItem(row_index, column_index, QTableWidgetItem(str(data)))
-
-        cursor.close()
-        connection.close()
-
-    def fetch_vehicle_images(self):
-        connection = connect_db()
-        cursor = connection.cursor()
-        cursor.execute("SELECT image FROM Operations_Vehicle")
-        images = [item[0] for item in cursor.fetchall()]
-        cursor.close()
-        connection.close()
-        return images
 
     def update_vehicle_image(self):
         if self.vehicle_images:
