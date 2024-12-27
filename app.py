@@ -3,7 +3,7 @@ import mysql.connector
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QWidget,
     QPushButton, QLabel, QLineEdit, QTableWidget, QTableWidgetItem,
-    QHBoxLayout, QSplitter, QTabWidget, QGridLayout
+    QHBoxLayout, QSplitter, QTabWidget, QGridLayout, QStackedWidget
 )
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap, QFont
@@ -24,10 +24,19 @@ class AutoShopManagementApp(QMainWindow):
         self.setWindowTitle("Auto Shop Management System")
         self.setGeometry(200, 200, 1200, 800)
 
-        self.main_widget = QWidget()
-        self.setCentralWidget(self.main_widget)
+        self.stack = QStackedWidget()
+        self.setCentralWidget(self.stack)
 
-        main_layout = QVBoxLayout(self.main_widget)
+        self.main_page = QWidget()
+        self.create_main_page()
+        self.stack.addWidget(self.main_page)
+
+        self.customer_page = QWidget()
+        self.create_customer_page()
+        self.stack.addWidget(self.customer_page)
+
+    def create_main_page(self):
+        main_layout = QVBoxLayout(self.main_page)
 
         # --- Top Navigation Bar ---
         nav_bar = QHBoxLayout()
@@ -45,7 +54,7 @@ class AutoShopManagementApp(QMainWindow):
         grid_layout.setSpacing(20)
 
         self.add_container(grid_layout, "📊 Analytics", 0, 0)
-        self.add_container(grid_layout, "👤 Customers", 0, 1)
+        self.add_container(grid_layout, "👤 Customers", 0, 1, self.show_customers)
         self.add_container(grid_layout, "📋 Jobs", 0, 2)
 
         self.add_container(grid_layout, "🔧 Requests", 1, 0)
@@ -70,10 +79,10 @@ class AutoShopManagementApp(QMainWindow):
 
         self.table_tabs = QTabWidget()
         self.table_tabs.setFixedHeight(300)
-        self.add_table("Operations_Customer")
-        self.add_table("Operations_Technician")
-        self.add_table("Operations_Part")
-        self.add_table("Operations_Job")
+        self.add_table(self.table_tabs, "Operations_Customer")
+        self.add_table(self.table_tabs, "Operations_Technician")
+        self.add_table(self.table_tabs, "Operations_Part")
+        self.add_table(self.table_tabs, "Operations_Job")
 
         table_layout.addWidget(self.table_tabs)
         splitter.addWidget(table_section)
@@ -91,7 +100,40 @@ class AutoShopManagementApp(QMainWindow):
         self.timer.timeout.connect(self.next_vehicle_image)
         self.timer.start(9000)
 
-    def add_container(self, layout, text, row, col):
+    def create_customer_page(self):
+        layout = QVBoxLayout(self.customer_page)
+
+        # Back button to return to the main page
+        back_button = QPushButton("🔙 Back")
+        back_button.clicked.connect(self.show_main_page)
+        layout.addWidget(back_button)
+
+        # Navigation bar
+        nav_bar = QHBoxLayout()
+        nav_bar.addWidget(QLabel("👤 Customers"))
+        nav_bar.addStretch(1)
+        layout.addLayout(nav_bar)
+
+        # Buttons at the top
+        button_layout = QHBoxLayout()
+        add_customer_btn = QPushButton("➕ Add Customer")
+        enquiry_btn = QPushButton("🕒 Enquiry")
+        customer_invoice_btn = QPushButton("💲 Customer Invoice")
+
+        button_layout.addWidget(add_customer_btn)
+        button_layout.addWidget(enquiry_btn)
+        button_layout.addWidget(customer_invoice_btn)
+        layout.addLayout(button_layout)
+
+        # Customer table
+        self.customer_table = QTableWidget()
+        self.customer_table.setColumnCount(5)
+        self.customer_table.setHorizontalHeaderLabels(["Customer ID", "Name", "Email", "Phone Number", "Address"])
+        layout.addWidget(self.customer_table)
+
+        self.populate_table(self.customer_table, "Operations_Customer")
+
+    def add_container(self, layout, text, row, col, on_click=None):
         container = QPushButton(text)
         container.setFixedHeight(150)
         container.setStyleSheet("""
@@ -102,12 +144,14 @@ class AutoShopManagementApp(QMainWindow):
             border: 2px solid #8E5724;
             font-weight: bold;
         """)
+        if on_click:
+            container.clicked.connect(on_click)
         layout.addWidget(container, row, col)
 
-    def add_table(self, table_name):
+    def add_table(self, table_widget, table_name):
         table = QTableWidget()
         self.populate_table(table, table_name)
-        self.table_tabs.addTab(table, table_name.split('_')[1])
+        table_widget.addTab(table, table_name.split('_')[1])
 
     def populate_table(self, table, table_name):
         connection = connect_db()
@@ -145,6 +189,12 @@ class AutoShopManagementApp(QMainWindow):
     def next_vehicle_image(self):
         self.current_image_index = (self.current_image_index + 1) % len(self.vehicle_images)
         self.update_vehicle_image()
+
+    def show_customers(self):
+        self.stack.setCurrentWidget(self.customer_page)
+
+    def show_main_page(self):
+        self.stack.setCurrentWidget(self.main_page)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -190,6 +240,14 @@ if __name__ == "__main__":
         }
         QTableWidget::item {
             padding: 5px;
+        }
+        QPushButton {
+            font-size: 16px;
+            padding: 10px;
+            background-color: #D37F3A;
+            color: white;
+            border: 2px solid #8E5724;
+            border-radius: 5px;
         }
     """)
 
