@@ -162,4 +162,3 @@ def parts_low_in_stock():
             conn.close()
 
 
-
