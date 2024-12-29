@@ -112,3 +112,18 @@ def change_password(username, current_password, new_password):
             cursor.close()
             conn.close()
 
+
+def change_user_role(username, new_role):
+    try:
+        conn = connect_db()
+        cursor = conn.cursor()
+        query = "UPDATE Users SET role = %s WHERE username = %s;"
+        cursor.execute(query, (new_role, username))
+        conn.commit()
+        print(f"Role updated to {new_role} for user {username}.")
+    except mysql.connector.Error as e:
+        print(f"Database error: {e}")
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
