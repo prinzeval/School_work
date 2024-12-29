@@ -246,3 +246,7 @@ JOIN operations_job AS J ON J.job_id = JP.job_id
 JOIN operations_part AS P ON P.part_id = JP.part_id
 JOIN operations_vehicle AS V ON V.vehicle_id = J.vehicle_id
 JOIN operations_customer AS C ON C.customer_id = V.customer_id;
+
+--DROPING part_num NOT NECESSARY
+ALTER TABLE operations_part
+DROP COLUMN part_num;
