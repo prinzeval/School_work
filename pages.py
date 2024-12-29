@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QVBoxLayout, QWidget, QPushButton, QLabel, QLineEdit,
     QTableWidget, QTableWidgetItem, QHBoxLayout, QSplitter, QTabWidget,
-    QGridLayout, QStackedWidget, QHeaderView,QDialog
+    QGridLayout, QStackedWidget, QHeaderView
 )
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap
@@ -41,6 +41,9 @@ class AutoShopManagementApp(QMainWindow):
         self.invoice_page = QWidget()
         self.create_invoice_page()
         self.stack.addWidget(self.invoice_page)
+
+    # Remaining class methods
+        # Remaining class methods
 
     def create_main_page(self):
         main_layout = QVBoxLayout(self.main_page)
@@ -269,7 +272,7 @@ class AutoShopManagementApp(QMainWindow):
                 cursor = conn.cursor()
                 query = """WITH name_plate_num(Customer_Name, Plate_Number) AS
                             (SELECT DISTINCT C.name,  V.plate_num
-                            FROM operations_customer AS C
+                                                        FROM operations_customer AS C
                             JOIN operations_vehicle AS V ON C.customer_id = V.customer_id),
                         mech_job(Enquiry_date, Problem_Description, Technician_Assigned, Plate_Number) AS
                             (SELECT J.start_date, J.job_type, T.name,  V.plate_num
@@ -433,5 +436,3 @@ class AutoShopManagementApp(QMainWindow):
         self.table_tabs.removeTab(3)
         self.table_tabs.insertTab(3, table, "Jobs")
         self.table_tabs.setCurrentWidget(table)
-
-

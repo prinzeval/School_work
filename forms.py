@@ -138,26 +138,27 @@ class TechnicianForm(QDialog):
             "hourly_rate": self.hourly_rate_field.text()
         }
 
+# forms.py
+
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLineEdit, QFormLayout, QPushButton, QHBoxLayout
+
 class PartForm(QDialog):
     def __init__(self, parent=None, data=None):
         super().__init__(parent)
-        self.setWindowTitle("Edit Part")
+        self.setWindowTitle("Edit Part" if data else "Add Part")
         self.layout = QVBoxLayout(self)
 
         self.form_layout = QFormLayout()
         self.part_name_field = QLineEdit()
-        self.part_number_field = QLineEdit()
         self.unit_price_field = QLineEdit()
         self.stock_quantity_field = QLineEdit()
 
         if data:
             self.part_name_field.setText(data["part_name"])
-            self.part_number_field.setText(data["part_number"])
             self.unit_price_field.setText(data["unit_price"])
             self.stock_quantity_field.setText(data["stock_quantity"])
 
         self.form_layout.addRow("Part Name:", self.part_name_field)
-        self.form_layout.addRow("Part Number:", self.part_number_field)
         self.form_layout.addRow("Unit Price:", self.unit_price_field)
         self.form_layout.addRow("Stock Quantity:", self.stock_quantity_field)
 
@@ -173,7 +174,6 @@ class PartForm(QDialog):
     def get_part_data(self):
         return {
             "part_name": self.part_name_field.text(),
-            "part_number": self.part_number_field.text(),
             "unit_price": self.unit_price_field.text(),
             "stock_quantity": self.stock_quantity_field.text()
         }
