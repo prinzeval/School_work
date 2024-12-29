@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QDialog, QFormLayout, QLineEdit, QPushButton
+from PyQt6.QtWidgets import QDialog, QFormLayout, QLineEdit, QPushButton,QHBoxLayout, QVBoxLayout
 
 class CustomerForm(QDialog):
     def __init__(self, parent=None, customer_data=None):
@@ -100,4 +100,80 @@ class InvoiceForm(QDialog):
             "part_amount": self.part_amount_input.text(),
             "job_amount": self.job_amount_input.text(),
             "total_cost": self.total_cost_input.text()
+        }
+
+class TechnicianForm(QDialog):
+    def __init__(self, parent=None, data=None):
+        super().__init__(parent)
+        self.setWindowTitle("Edit Technician")
+        self.layout = QVBoxLayout(self)
+
+        self.form_layout = QFormLayout()
+        self.name_field = QLineEdit()
+        self.specialty_field = QLineEdit()
+        self.hourly_rate_field = QLineEdit()
+
+        if data:
+            self.name_field.setText(data["name"])
+            self.specialty_field.setText(data["specialty"])
+            self.hourly_rate_field.setText(data["hourly_rate"])
+
+        self.form_layout.addRow("Name:", self.name_field)
+        self.form_layout.addRow("Specialty:", self.specialty_field)
+        self.form_layout.addRow("Hourly Rate:", self.hourly_rate_field)
+
+        self.layout.addLayout(self.form_layout)
+
+        self.buttons_layout = QHBoxLayout()
+        self.save_button = QPushButton("Save")
+        self.save_button.clicked.connect(self.accept)
+        self.buttons_layout.addWidget(self.save_button)
+
+        self.layout.addLayout(self.buttons_layout)
+
+    def get_technician_data(self):
+        return {
+            "name": self.name_field.text(),
+            "specialty": self.specialty_field.text(),
+            "hourly_rate": self.hourly_rate_field.text()
+        }
+
+class PartForm(QDialog):
+    def __init__(self, parent=None, data=None):
+        super().__init__(parent)
+        self.setWindowTitle("Edit Part")
+        self.layout = QVBoxLayout(self)
+
+        self.form_layout = QFormLayout()
+        self.part_name_field = QLineEdit()
+        self.part_number_field = QLineEdit()
+        self.unit_price_field = QLineEdit()
+        self.stock_quantity_field = QLineEdit()
+
+        if data:
+            self.part_name_field.setText(data["part_name"])
+            self.part_number_field.setText(data["part_number"])
+            self.unit_price_field.setText(data["unit_price"])
+            self.stock_quantity_field.setText(data["stock_quantity"])
+
+        self.form_layout.addRow("Part Name:", self.part_name_field)
+        self.form_layout.addRow("Part Number:", self.part_number_field)
+        self.form_layout.addRow("Unit Price:", self.unit_price_field)
+        self.form_layout.addRow("Stock Quantity:", self.stock_quantity_field)
+
+        self.layout.addLayout(self.form_layout)
+
+        self.buttons_layout = QHBoxLayout()
+        self.save_button = QPushButton("Save")
+        self.save_button.clicked.connect(self.accept)
+        self.buttons_layout.addWidget(self.save_button)
+
+        self.layout.addLayout(self.buttons_layout)
+
+    def get_part_data(self):
+        return {
+            "part_name": self.part_name_field.text(),
+            "part_number": self.part_number_field.text(),
+            "unit_price": self.unit_price_field.text(),
+            "stock_quantity": self.stock_quantity_field.text()
         }

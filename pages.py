@@ -1,13 +1,16 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QVBoxLayout, QWidget, QPushButton, QLabel, QLineEdit,
     QTableWidget, QTableWidgetItem, QHBoxLayout, QSplitter, QTabWidget,
-    QGridLayout, QStackedWidget
+    QGridLayout, QStackedWidget, QHeaderView,QDialog
 )
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap
 from forms import CustomerForm, EnquiryForm, InvoiceForm
-import autoshop_functions as af
-import mysql.connector  
+import main_Customer_db_functions as af
+import mysql.connector
+from technician_page import TechnicianPage
+from part_page import PartPage
+
 class AutoShopManagementApp(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -24,6 +27,12 @@ class AutoShopManagementApp(QMainWindow):
         self.customer_page = QWidget()
         self.create_customer_page()
         self.stack.addWidget(self.customer_page)
+
+        self.technician_page = TechnicianPage(self)
+        self.stack.addWidget(self.technician_page)
+
+        self.part_page = PartPage(self)
+        self.stack.addWidget(self.part_page)
 
         self.enquiry_page = QWidget()
         self.create_enquiry_page()
@@ -51,12 +60,12 @@ class AutoShopManagementApp(QMainWindow):
         grid_layout = QGridLayout()
         grid_layout.setSpacing(20)
 
-        self.add_container(grid_layout, "👨‍🔧 Technician", 0, 0)
+        self.add_container(grid_layout, "👨‍🔧 Technician", 0, 0, self.show_technicians)
         self.add_container(grid_layout, "👤 Customers", 0, 1, self.show_customers)
         self.add_container(grid_layout, "📋 Jobs", 0, 2)
 
         self.add_container(grid_layout, "📊 Analytics", 1, 0)
-        self.add_container(grid_layout, "⚙️ Parts", 1, 1)
+        self.add_container(grid_layout, "⚙️ Parts", 1, 1, self.show_parts)
         self.add_container(grid_layout, "💳 Invoices", 1, 2)
 
         main_layout.addLayout(grid_layout)
@@ -146,6 +155,7 @@ class AutoShopManagementApp(QMainWindow):
 
         # Back button to return to the main page
         back_button = QPushButton("🔙 Back")
+        back_button.setFixedHeight(50)  # Adjust if needed
         back_button.clicked.connect(self.show_main_page)
         layout.addWidget(back_button)
 
@@ -161,6 +171,19 @@ class AutoShopManagementApp(QMainWindow):
         enquiry_btn = QPushButton("🕒 Enquiry")
         customer_invoice_btn = QPushButton("💲 Customer Invoice")
 
+        # Set fixed height and width to match main containers
+        for btn in [add_customer_btn, enquiry_btn, customer_invoice_btn]:
+            btn.setFixedHeight(150)
+            btn.setFixedWidth(400)
+            btn.setStyleSheet("""
+                font-size: 18px;
+                padding: 20px;
+                background-color: #D37F3A;
+                color: white;
+                border: 2px solid #8E5724;
+                font-weight: bold;
+            """)
+
         add_customer_btn.clicked.connect(self.add_customer)
         enquiry_btn.clicked.connect(self.show_enquiries)
         customer_invoice_btn.clicked.connect(self.show_customer_invoices)
@@ -174,7 +197,11 @@ class AutoShopManagementApp(QMainWindow):
         self.customer_table = QTableWidget()
         self.customer_table.setColumnCount(7)
         self.customer_table.setHorizontalHeaderLabels(["Customer ID", "Name", "Email", "Phone Number", "Address", "Edit", "Delete"])
+        self.customer_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.customer_table.horizontalHeader().setStretchLastSection(True)
+
         layout.addWidget(self.customer_table)
+        layout.setStretch(3, 1)  # Ensure the table occupies the remaining space
 
         # Placeholder for populating table (remove database aspect)
         self.populate_customers()
@@ -209,9 +236,9 @@ class AutoShopManagementApp(QMainWindow):
     def create_enquiry_page(self):
         layout = QVBoxLayout(self.enquiry_page)
 
-        # Back button to return to the main page
+        # Back button to return to the customer page
         back_button = QPushButton("🔙 Back")
-        back_button.clicked.connect(self.show_main_page)
+        back_button.clicked.connect(self.show_customers)
         layout.addWidget(back_button)
 
         # Navigation bar
@@ -224,7 +251,10 @@ class AutoShopManagementApp(QMainWindow):
         self.enquiry_table = QTableWidget()
         self.enquiry_table.setColumnCount(5)
         self.enquiry_table.setHorizontalHeaderLabels(["Name", "Plate number", "Enquiry Date", "Problem Description", "Technician assigned"])
+        self.enquiry_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.enquiry_table.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self.enquiry_table)
+        layout.setStretch(2, 1)  # Ensure the table occupies the remaining space
 
         # Placeholder for populating table (remove database aspect)
         self.populate_enquiries()
@@ -266,9 +296,9 @@ class AutoShopManagementApp(QMainWindow):
     def create_invoice_page(self):
         layout = QVBoxLayout(self.invoice_page)
 
-        # Back button to return to the main page
+        # Back button to return to the customer page
         back_button = QPushButton("🔙 Back")
-        back_button.clicked.connect(self.show_main_page)
+        back_button.clicked.connect(self.show_customers)
         layout.addWidget(back_button)
 
         # Navigation bar
@@ -281,7 +311,10 @@ class AutoShopManagementApp(QMainWindow):
         self.invoice_table = QTableWidget()
         self.invoice_table.setColumnCount(6)
         self.invoice_table.setHorizontalHeaderLabels(["Name", "Part used", "Number of parts used", "Part amount", "Job amount", "Total cost"])
+        self.invoice_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.invoice_table.horizontalHeader().setStretchLastSection(True)
         layout.addWidget(self.invoice_table)
+        layout.setStretch(2, 1)  # Ensure the table occupies the remaining space
 
         # Placeholder for populating table (remove database aspect)
         self.populate_invoices()
@@ -329,20 +362,14 @@ class AutoShopManagementApp(QMainWindow):
             container.clicked.connect(on_click)
         layout.addWidget(container, row, col)
 
-    def update_vehicle_image(self):
-        if self.vehicle_images:
-            local_path = self.vehicle_images[self.current_image_index].replace("\\", "/")
-            pixmap = QPixmap(local_path)
-            if pixmap.isNull():
-                pixmap = QPixmap("default_placeholder.png")
-            self.vehicle_container.setPixmap(pixmap.scaled(500, 300, Qt.AspectRatioMode.KeepAspectRatio))
-
-    def next_vehicle_image(self):
-        self.current_image_index = (self.current_image_index + 1) % len(self.vehicle_images)
-        self.update_vehicle_image()
-
     def show_customers(self):
         self.stack.setCurrentWidget(self.customer_page)
+
+    def show_technicians(self):
+        self.stack.setCurrentWidget(self.technician_page)
+
+    def show_parts(self):
+        self.stack.setCurrentWidget(self.part_page)
 
     def show_enquiries(self):
         self.stack.setCurrentWidget(self.enquiry_page)
@@ -404,5 +431,7 @@ class AutoShopManagementApp(QMainWindow):
     def mainwindow_jobs(self):
         table = self.create_data_table("Operations_Job")
         self.table_tabs.removeTab(3)
-        self.table_tabs.insert
+        self.table_tabs.insertTab(3, table, "Jobs")
+        self.table_tabs.setCurrentWidget(table)
+
 
