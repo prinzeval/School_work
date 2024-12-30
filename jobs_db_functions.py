@@ -158,7 +158,7 @@ def edit_job_field(job_id, column_name, new_value):
         new_value: The new value to set (type depends on the column).
     """
     try:
-        conn = connect_db()  # Replace with your DB connection function
+        conn = connect_db()  
         if conn:
             cursor = conn.cursor()
 
@@ -184,5 +184,21 @@ def edit_job_field(job_id, column_name, new_value):
             cursor.close()
             conn.close()
 
+def delete_job(job_id):
+    """Deletes a record  of a job from the Operations_Job table.
+    """
+    try:
+        conn = connect_db()
+        if conn:
+            cursor = conn.cursor()
+            query = "DELETE FROM Operations_Job WHERE job_id = %s"
+            cursor.execute(query, (job_id))
+            conn.commit
+    except mysql.connector.Error as e:
+        print(f"Database error: {e}")
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
 
 
