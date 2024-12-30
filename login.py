@@ -1,116 +1,44 @@
-import mysql.connector
-import bcrypt #used for password hashing(encryption)
+# login.py
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout
+from auth_db_functions import verify_login  # Importing the verify_login function
+from signup import SignUpForm  # Importing the SignUpForm
 
-def connect_db():
-    try:
-        return mysql.connector.connect(
-            host="localhost", 
-            port=3306,        
-            user="root",       
-            password="Vondabaic2020",  
-            database="Autoshop"   
-        )
-    except mysql.connector.Error as e:
-        print(f"Error connecting to database: {e}")
-        return None
+class LoginForm(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Login")
+        self.layout = QVBoxLayout(self)
 
-#VAL USE THIS FUNCTION ONLY TO INSERT USERS INTO THE DATABASE ON YOUR END
-#IT IS NOT A BACKEND FUNCTION THAT NEEDS TO BE INTEGRATED TO YOUR FRONEND CODE
-def hash_and_insert_users():
-    users = [
-        {"username": "admin", "password": "admin1234", "role": "Admin"},
-        {"username": "tech1", "password": "tech12345", "role": "Technician"},
-        {"username": "tech2", "password": "tech67890", "role": "Technician"},
-        {"username": "admin2", "password": "admin5678", "role": "Admin"},
-        {"username": "tech3", "password": "tech4321", "role": "Technician"}
-    ]
+        self.username_input = QLineEdit()
+        self.password_input = QLineEdit()
+        self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
 
-    try:
-        conn = connect_db()
-        cursor = conn.cursor()
+        self.layout.addWidget(QLabel("Username"))
+        self.layout.addWidget(self.username_input)
+        self.layout.addWidget(QLabel("Password"))
+        self.layout.addWidget(self.password_input)
 
-        for user in users:
-            hashed_password = bcrypt.hashpw(user["password"].encode('utf-8'), bcrypt.gensalt())
-            query = "INSERT INTO Users (username, password_hash, role) VALUES (%s, %s, %s)"
-            cursor.execute(query, (user["username"], hashed_password.decode('utf-8'), user["role"]))
+        self.buttons_layout = QHBoxLayout()
+        self.login_button = QPushButton("Login")
+        self.login_button.clicked.connect(self.handle_login)
+        self.signup_button = QPushButton("Sign Up")
+        self.signup_button.clicked.connect(self.show_signup)
+        self.buttons_layout.addWidget(self.login_button)
+        self.buttons_layout.addWidget(self.signup_button)
 
-        conn.commit()
-        print("Users inserted successfully!")
+        self.layout.addLayout(self.buttons_layout)
 
-    except mysql.connector.Error as e:
-        print(f"Error: {e}")
-    finally:
-        if conn:
-            cursor.close()
-            conn.close()
-
-# hash_and_insert_users()
-
-#password validation
-def verify_login(username, password):
-    try:
-        conn = connect_db()
-        cursor = conn.cursor()
-        query = "SELECT password_hash, role FROM Users WHERE username = %s;"
-        cursor.execute(query, (username))
-        user = cursor.fetchone()
-
-        if user and bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-            return user['role'] #succesful login, returns the role
+    def handle_login(self):
+        username = self.username_input.text()
+        password = self.password_input.text()
+        role = verify_login(username, password)
+        if role:
+            self.accept()
         else:
-            return None # invalid credentials
-    except mysql.connector.Error as e:
-        print(f"Database error: {e}")
-    finally:
-        if conn:
-            cursor.close()
-            conn.close()
+            self.username_input.clear()
+            self.password_input.clear()
+            self.username_input.setPlaceholderText("Invalid credentials")
 
-
-###THIS WILL BE FOR A SIGN UP PAGE#####
-def add_new_user(username, password, role):
-    try:
-        conn = connect_db()
-        cursor = conn.cursor()
-
-        #Hashing the password for security
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        query = "INSERT INTO Users (username, password_hash, role) VALUES (%s, %s, %s);"
-        cursor.execute(query, (username, hashed_password.decode('utf-8'), role))
-        conn.commit()
-        print("New user added successfully!")
-    except mysql.connector.Error as e:
-        print(f"Database error: {e}")
-    finally:
-        if conn:
-            cursor.close()
-            conn.close()
-
-def change_password(username, current_password, new_password):
-    try:
-        conn = connect_db()
-        cursor = conn.cursor(dictionary=True)#fecthing it as a dictionary makes slicing easier
-
-        #fetching current hashed password
-        query = "SELECT password_hash FROM Users WHERE username = %s;"
-        cursor.execute(query, (username))
-        user = cursor.fetchone()
-
-        if user and bcrypt.checkpw(current_password.encode('utf-8'), user['password_hash'].encode('utf-8')):
-            # Hash the new password
-            new_hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
-
-            # Update the password in the database
-            update_query = "UPDATE Users SET password_hash = %s WHERE username = %s;"
-            cursor.execute(update_query, (new_hashed_password.decode('utf-8'), username))
-            conn.commit()
-            print("Password updated successfully!")
-        else:
-            print("Current password is incorrect.")
-    except mysql.connector.Error as e:
-        print(f"Database error: {e}")
-    finally:
-        if conn:
-            cursor.close()
-            conn.close()
-
+    def show_signup(self):
+        signup_form = SignUpForm(self)
+        signup_form.exec()

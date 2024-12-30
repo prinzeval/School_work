@@ -1,8 +1,9 @@
 import sys
 from PyQt6.QtWidgets import QApplication
-from pages.pages import AutoShopManagementApp
+from login import LoginForm  # Import the LoginForm
+from pages.pages import AutoShopManagementApp  # Update the import path to match the directory structure
 
-if __name__ == "__main__":
+def main():
     app = QApplication(sys.argv)
 
     # Apply global style
@@ -56,6 +57,11 @@ if __name__ == "__main__":
         }
     """)
 
-    main_window = AutoShopManagementApp()
-    main_window.show()
-    sys.exit(app.exec())
+    login_form = LoginForm()  # Instantiate the login form
+    if login_form.exec():  # Check if the login is successful
+        main_window = AutoShopManagementApp()
+        main_window.show()
+        sys.exit(app.exec())
+
+if __name__ == "__main__":
+    main()
