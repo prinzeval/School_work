@@ -64,6 +64,7 @@ CREATE TABLE Operations_JobPart (
     FOREIGN KEY (part_id) REFERENCES Operations_Part(part_id) ON DELETE CASCADE
 );
 
+
 CREATE TABLE Operations_Invoice (
     invoice_id INT AUTO_INCREMENT PRIMARY KEY,
     jobpart_id INT NOT NULL,
@@ -73,6 +74,8 @@ CREATE TABLE Operations_Invoice (
     payment_status VARCHAR(10) DEFAULT 'Unpaid',
     FOREIGN KEY (jobpart_id) REFERENCES Operations_JobPart(jobpart_id) ON DELETE CASCADE
 );
+
+
 
 CREATE TABLE Analytics_Date (
     date_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -284,14 +287,54 @@ UPDATE operations_job AS J
 SET J.status = %s, J.end_date = %s
 WHERE V.plate_num = %s
       AND J.job_type = %s
-      AND T.name = %s
+      AND T.name = %s;
 
 INSERT INTO Operations_Job(vehicle_id, job_type, start_date) VALUES
 ( (SELECT vehicle_id
     FROM Operations_Vehicle
-    WHERE plate_num = %s), %s, %s )
+    WHERE plate_num = %s), %s, %s );
 
 INSERT INTO Operations_Vehicle (customer_id, make, model, year, colour, VIN, plate_num, mileage, image) VALUES 
 ((SELECT customer_id
     FROM operations_customer
-    WHERE customer_name = %s), %s, %s, %s, %s, %s, %s, %s, %s)    
+    WHERE customer_name = %s), %s, %s, %s, %s, %s, %s, %s, %s);    
+
+INSERT INTO Operations_Invoice (invoice_id, jobpart_id, issued_date, sales_tax) VALUES
+(%s, %s, %s, %s);
+
+UPDATE operations_invoice SET payment_status = %s WHERE invoice_id = %s;
+
+SELECT I.invoice_id, C.name AS Customer_Name, C.address AS Address, I.issued_date AS Issued_Date, V.make AS Make, V.model AS Model,
+V.year AS Year, V.colour AS Colour, V.VIN, V.plate_num AS Plate_Number, V.mileage AS Mileage, J.job_type AS Job_Performed,
+JP.quantity_part_used AS No_of_Parts_Used, JP.part_amount AS Part_Price, J.job_amount AS Labour, I.sales_tax AS Sales_Tax, 
+I.total_amount AS Total_amount, I.payment_status AS Payment_Status
+FROM operations_invoice  AS I
+JOIN operations_jobpart AS JP ON I.jobpart_id = JP.jobpart_id
+JOIN operations_job AS J ON JP.job_id = J.job_id
+JOIN operations_part AS P ON JP.part_id = P.part_id
+JOIN operations_vehicle AS V ON J.vehicle_id = V.vehicle_id
+JOIN operations_customer AS C ON V.customer_id = C.customer_id;
+
+SELECT I.invoice_id, C.name AS Customer_Name, C.address AS Address, I.issued_date AS Issued_Date, V.make AS Make, V.model AS Model,
+V.year AS Year, V.colour AS Colour, V.VIN, V.plate_num AS Plate_Number, V.mileage AS Mileage, J.job_type AS Job_Performed,
+JP.quantity_part_used AS No_of_Parts_Used, JP.part_amount AS Part_Price, J.job_amount AS Labour, I.sales_tax AS Sales_Tax, 
+I.total_amount AS Total_amount, I.payment_status AS Payment_Status
+FROM operations_invoice  AS I
+JOIN operations_jobpart AS JP ON I.jobpart_id = JP.jobpart_id
+JOIN operations_job AS J ON JP.job_id = J.job_id
+JOIN operations_part AS P ON JP.part_id = P.part_id
+JOIN operations_vehicle AS V ON J.vehicle_id = V.vehicle_id
+JOIN operations_customer AS C ON V.customer_id = C.customer_id
+WHERE I.payment_status = "Unpaid";
+
+SELECT I.invoice_id, C.name AS Customer_Name, C.address AS Address, I.issued_date AS Issued_Date, V.make AS Make, V.model AS Model,
+V.year AS Year, V.colour AS Colour, V.VIN, V.plate_num AS Plate_Number, V.mileage AS Mileage, J.job_type AS Job_Performed,
+JP.quantity_part_used AS No_of_Parts_Used, JP.part_amount AS Part_Price, J.job_amount AS Labour, I.sales_tax AS Sales_Tax, 
+I.total_amount AS Total_amount, I.payment_status AS Payment_Status
+FROM operations_invoice  AS I
+JOIN operations_jobpart AS JP ON I.jobpart_id = JP.jobpart_id
+JOIN operations_job AS J ON JP.job_id = J.job_id
+JOIN operations_part AS P ON JP.part_id = P.part_id
+JOIN operations_vehicle AS V ON J.vehicle_id = V.vehicle_id
+JOIN operations_customer AS C ON V.customer_id = C.customer_id
+WHERE I.payment_status = "paid";
