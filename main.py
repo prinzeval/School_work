@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication
-from pages import AutoShopManagementApp
+from pages.pages import AutoShopManagementApp
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

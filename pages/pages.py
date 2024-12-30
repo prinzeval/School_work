@@ -6,13 +6,13 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap
 from forms import CustomerForm, EnquiryForm
-import main_Customer_db_functions as af
+import funtions.main_Customer_db_functions as af
 import mysql.connector
-from technician_page import TechnicianPage
-from part_page import PartPage
-from main_invoice_page import InvoicePage  # Importing the main InvoicePage
-from vehicle_page import VehiclePage  # Importing the VehiclePage
-from job_page import JobPage # Importing the JobPage
+from pages.technician_page import TechnicianPage
+from pages.part_page import PartPage
+from pages.main_invoice_page import InvoicePage  # Importing the main InvoicePage
+from pages.vehicle_page import VehiclePage  # Importing the VehiclePage
+from pages.job_page import JobPage # Importing the JobPage
 
 class AutoShopManagementApp(QMainWindow):
     def __init__(self):

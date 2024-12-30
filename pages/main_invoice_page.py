@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QVBoxLayout,QDialog, QWidget, QPushButton, QLabel, QHBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLineEdit, QFormLayout
-import invoice_db_functions as af  # Importing the invoice database functions
+import funtions.invoice_db_functions as af  # Importing the invoice database functions
 import mysql.connector
 
 class InvoicePage(QWidget):

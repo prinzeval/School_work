@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QVBoxLayout, QWidget, QPushButton, QLabel, QHBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QDialog
 from PyQt6.QtGui import QPixmap  # Add this import
-import vehicle_db_functions as vf  # Importing the vehicle database functions
+import funtions.vehicle_db_functions as vf  # Importing the vehicle database functions
 import mysql.connector
 from forms import VehicleForm  # Importing the VehicleForm from forms.py
 class VehiclePage(QWidget):

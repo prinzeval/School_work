@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QVBoxLayout, QWidget, QPushButton, QHBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QFormLayout, QLineEdit, QStackedWidget
-import job_db_functions as jf  # Importing the job database functions
+import funtions.job_db_functions as jf  # Importing the job database functions
 from forms import JobForm  # Importing the JobForm from job_form.py
 import datetime
 from decimal import Decimal  # Importing the Decimal class

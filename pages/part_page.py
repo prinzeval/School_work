@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QVBoxLayout, QWidget, QPushButton, QLabel, QHBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView
-import Parts_db_functions as af  # Updated import statement
+import funtions.Parts_db_functions as af  # Updated import statement
 from forms import PartForm
 import mysql.connector  
 
