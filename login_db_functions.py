@@ -25,7 +25,7 @@ def hash_and_insert_users():
         {"username": "tech3", "password": "tech4321", "role": "Technician"}
     ]
 
-    try:
+    try:    
         conn = connect_db()
         cursor = conn.cursor()
 

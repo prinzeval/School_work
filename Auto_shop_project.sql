@@ -52,6 +52,7 @@ CREATE TABLE Operations_Job (
     FOREIGN KEY (technician_id) REFERENCES Operations_Technician(technician_id) ON DELETE CASCADE
 );
 
+
 CREATE TABLE Operations_JobPart (
     jobpart_id INT AUTO_INCREMENT PRIMARY KEY,
     job_id INT NOT NULL,
@@ -250,3 +251,43 @@ JOIN operations_customer AS C ON C.customer_id = V.customer_id;
 --DROPING part_num NOT NECESSARY
 ALTER TABLE operations_part
 DROP COLUMN part_num;
+
+--Job queries
+SELECT C.name AS Customer_Name, V.make AS Make, V.plate_num AS Plate_Number, J.job_type AS Problem_Description, J.start_date AS Start_date, J.hours AS Hours, J.job_amount AS Job_Amount
+FROM operations_job  AS J
+JOIN operations_vehicle AS V ON J.vehicle_id = V.vehicle_id
+JOIN operations_customer AS C ON V.customer_id = C.customer_id
+WHERE J.status = 'In progress';
+
+SELECT C.name AS Customer_Name, V.make AS Make, V.plate_num AS Plate_Number, J.job_type AS Problem_Description, J.start_date AS Start_date, J.end_date AS End_date, J.hours AS Hours, J.job_amount AS Job_Amount
+FROM operations_job  AS J
+JOIN operations_vehicle AS V ON J.vehicle_id = V.vehicle_id
+JOIN operations_customer AS C ON V.customer_id = C.customer_id
+WHERE J.status = 'Completed';
+
+UPDATE operations_job AS J
+    JOIN operations_customer AS C ON J.customer_id = C.customer_id
+    JOIN operations_vehicle AS V ON V.vehicle_id = J.vehicle_id
+SET technician_id = (
+        SELECT technician_id
+        FROM operations_technician
+        WHERE name = %s
+        LIMIT 1
+    )
+WHERE C.name = %s
+    AND V.plate_num = %s
+    AND J.job_type = %s;
+
+UPDATE operations_job AS J
+    JOIN operations_technician AS T ON J.technician_id = T.technician_id
+    JOIN operations_vehicle AS V ON V.vehicle_id = J.vehicle_id
+SET J.status = %s, J.end_date = %s
+WHERE V.plate_num = %s
+      AND J.job_type = %s
+      AND T.name = %s
+
+INSERT INTO Operations_Job(vehicle_id, job_type, start_date) VALUES
+( (SELECT vehicle_id
+    FROM Operations_Vehicle
+    WHERE plate_num = %s), %s, %s )
+    
