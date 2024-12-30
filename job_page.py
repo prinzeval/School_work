@@ -1,11 +1,9 @@
-from PyQt6.QtWidgets import (
-    QVBoxLayout, QWidget, QPushButton, QHBoxLayout, QTableWidget, 
-    QTableWidgetItem, QHeaderView, QMessageBox
-)
-import job_db_functions as jf
-from forms import JobForm
-import mysql.connector
-
+from PyQt6.QtWidgets import QVBoxLayout, QWidget, QPushButton, QHBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QFormLayout, QLineEdit, QStackedWidget
+import job_db_functions as jf  # Importing the job database functions
+from forms import JobForm  # Importing the JobForm from job_form.py
+import datetime
+from decimal import Decimal  # Importing the Decimal class
+import mysql.connector  
 class JobPage(QWidget):
     def __init__(self, main_app, parent=None):
         super().__init__(parent)
@@ -55,7 +53,7 @@ class JobPage(QWidget):
 
         # Job table
         self.job_table = QTableWidget()
-        self.job_table.setColumnCount(9)
+        self.job_table.setColumnCount(9)  # Updated to include columns for job details
         self.job_table.setHorizontalHeaderLabels(["Job ID", "Vehicle ID", "Technician ID", "Job Type", "Start Date", "End Date", "Job Amount", "Hours", "Status"])
         self.job_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         self.job_table.horizontalHeader().setStretchLastSection(True)
@@ -74,7 +72,13 @@ class JobPage(QWidget):
                 for row_index, row_data in enumerate(rows):
                     self.job_table.insertRow(row_index)
                     for column_index, data in enumerate(row_data):
-                        self.job_table.setItem(row_index, column_index, QTableWidgetItem(str(data)))
+                        if isinstance(data, datetime.date):
+                            item = QTableWidgetItem(data.strftime("%Y-%m-%d"))
+                        elif isinstance(data, Decimal):
+                            item = QTableWidgetItem(str(float(data)))
+                        else:
+                            item = QTableWidgetItem(str(data))
+                        self.job_table.setItem(row_index, column_index, item)
         except mysql.connector.Error as e:
             print(f"Database error: {e}")
 
@@ -174,7 +178,7 @@ class CompletedJobsPage(QWidget):
         # Job table
         self.job_table = QTableWidget()
         self.job_table.setColumnCount(8)
-        self.job_table.setHorizontalHeaderLabels(["Customer Name", "Vehicle Make", "Plate Number", "Problem Description", "Start Date", "End Date", "Job Amount", "Hours"])
+        self.job_table.setHorizontalHeaderLabels(["Customer Name", "Vehicle Make", "Plate Number", "Problem Description", "Start Date", "End Date", "Hours", "Job Amount"])
         self.job_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         self.job_table.horizontalHeader().setStretchLastSection(True)
 
@@ -182,9 +186,9 @@ class CompletedJobsPage(QWidget):
         self.layout.setStretch(1, 1)  # Ensure the table occupies the remaining space
 
         # Populate table with completed jobs
-        self.populate_completed_jobs()
+        self.populate_jobs_completed()
 
-    def populate_completed_jobs(self):
+    def populate_jobs_completed(self):
         self.job_table.setRowCount(0)
         try:
             rows = jf.view_jobs_completed()
@@ -219,19 +223,85 @@ class FinishJobPage(QWidget):
         back_button.clicked.connect(self.show_job_page)
         self.layout.addWidget(back_button)
 
-        # Job form to finish job
-        finish_job_form = JobForm(self)
-        if finish_job_form.exec():
-            job_data = finish_job_form.get_job_data()
-            try:
-                jf.finish_job(
-                    plate_num=job_data['plate_num'],
-                    problem_description=job_data['problem_description'],
-                    Technician_assigned=job_data['technician'],
-                    end_date=job_data['end_date'],
-                    new_status=job_data['status']
-                )
-                QMessageBox.information(self, "Success", "Job marked as finished!")
-            except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to finish job: {e}")
+        # Finish job form
+        form_layout = QFormLayout()
+        self.plate_num_input = QLineEdit()
+        self.problem_description_input = QLineEdit()
+        self.technician_name_input = QLineEdit()
+        self.end_date_input = QLineEdit()
+        self.status_input = QLineEdit()
 
+        form_layout.addRow("Vehicle Plate Number:", self.plate_num_input)
+        form_layout.addRow("Problem Description:", self.problem_description_input)
+        form_layout.addRow("Technician Name:", self.technician_name_input)
+        form_layout.addRow("End Date:", self.end_date_input)
+        form_layout.addRow("Status:", self.status_input)
+
+        self.layout.addLayout(form_layout)
+
+        approve_button = QPushButton("Approve")
+        approve_button.setFixedHeight(50)
+        approve_button.setStyleSheet("""
+            font-size: 18px;
+            padding: 10px;
+            background-color: #D37F3A;
+            color: white;
+            border: 2px solid #8E5724;
+            font-weight: bold;
+        """)
+        approve_button.clicked.connect(self.finish_job)
+
+        self.layout.addWidget(approve_button)
+
+    def finish_job(self):
+        plate_num = self.plate_num_input.text()
+        problem_description = self.problem_description_input.text()
+        technician_name = self.technician_name_input.text()
+        end_date = self.end_date_input.text()
+        status = self.status_input.text()
+
+        jf.finish_job(plate_num, problem_description, technician_name, end_date, status)
+
+        # Clear the form inputs
+        self.plate_num_input.clear()
+        self.problem_description_input.clear()
+        self.technician_name_input.clear()
+        self.end_date_input.clear()
+        self.status_input.clear()
+
+        # Show success message (optional)
+        # QMessageBox.information(self, "Success", "Job finished successfully!")
+
+    def show_job_page(self):
+        self.main_app.stack.setCurrentWidget(self.main_app.job_page)
+
+class MainApp(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.stack = QStackedWidget(self)
+        self.main_page = JobPage(self)
+        self.jobs_in_progress_page = JobsInProgressPage(self)
+        self.completed_jobs_page = CompletedJobsPage(self)
+        self.finish_job_page = FinishJobPage(self)
+
+        self.stack.addWidget(self.main_page)
+        self.stack.addWidget(self.jobs_in_progress_page)
+        self.stack.addWidget(self.completed_jobs_page)
+        self.stack.addWidget(self.finish_job_page)
+
+        self.layout = QVBoxLayout(self)
+        self.layout.addWidget(self.stack)
+
+        self.show_main_page()
+
+    def show_main_page(self):
+        self.stack.setCurrentWidget(self.main_page)
+
+    def show_jobs_in_progress_page(self):
+        self.stack.setCurrentWidget(self.jobs_in_progress_page)
+
+    def show_completed_jobs_page(self):
+        self.stack.setCurrentWidget(self.completed_jobs_page)
+
+    def show_finish_job_page(self):
+        self.stack.setCurrentWidget(self.finish_job_page)
