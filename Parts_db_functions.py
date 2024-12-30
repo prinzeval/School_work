@@ -161,4 +161,41 @@ def parts_low_in_stock():
             cursor.close()
             conn.close()
 
+def edit_job_field(job_id, column_name, new_value):
+    """
+    Updates a specific field in the Operations_Job table for a given job_id.
+
+    Args:
+        job_id (int): The ID of the job to update.
+        column_name (string): The column name to update.
+        new_value: The new value to set (type depends on the column).
+    """
+    try:
+        conn = connect_db()  # Replace with your DB connection function
+        if conn:
+            cursor = conn.cursor()
+
+            # Sanitize column_name to avoid SQL injection
+            allowed_columns = [
+                "vehicle_id", "technician_id", "job_type", "start_date", 
+                "end_date", "job_amount", "hours", "status"
+            ]
+            if column_name not in allowed_columns:
+                raise ValueError(f"Invalid column name: {column_name}")
+
+            # Construct the dynamic SQL query
+            query = f"UPDATE Operations_Job SET {column_name} = %s WHERE job_id = %s"
+            cursor.execute(query, (new_value, job_id))
+            conn.commit()
+            print(f"Updated {column_name} for job_id {job_id} successfully!")
+    except mysql.connector.Error as e:
+        print(f"Database error: {e}")
+    except ValueError as ve:
+        print(ve)
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
+
+
 

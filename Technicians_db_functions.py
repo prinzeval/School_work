@@ -163,33 +163,25 @@ def veiw_daily_wage():
             conn.close()
 
 def assign_technician(customer_name, plate_num, description, technician_name):
-    """Assigns a technician to handle a particular job
-
-    Args:
-        customer_name (string): the customers fullname
-        plate_num (string): plate number of the car owned by customer
-        description(string): problem description
-        technician_name(string): name of the technician to be assigned
-
-    """
+    """Assigns a technician to handle a particular job."""
     try:
         conn = connect_db()
         if conn:
             cursor = conn.cursor()
             query = """UPDATE operations_job AS J
-                        JOIN operations_customer AS C ON J.customer_id = C.customer_id
                         JOIN operations_vehicle AS V ON V.vehicle_id = J.vehicle_id
+                        JOIN operations_customer AS C ON V.customer_id = C.customer_id
                         SET technician_id = (SELECT technician_id
                                             FROM operations_technician
                                             WHERE name = %s
                                             LIMIT 1)
                         WHERE C.name = %s
                         AND V.plate_num = %s
-                        AND J.job_type = %s
-                    """
+                        AND J.job_type = %s"""
             values = (technician_name, customer_name, plate_num, description)
             cursor.execute(query, values)
             conn.commit()
+            print(f"""{technician_name} has been assigned to handle the job for {customer_name}'s vehicle with plate number {plate_num}.""")
     except mysql.connector.Error as e:
         print(f"Database error: {e}")
     finally:
