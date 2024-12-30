@@ -290,4 +290,8 @@ INSERT INTO Operations_Job(vehicle_id, job_type, start_date) VALUES
 ( (SELECT vehicle_id
     FROM Operations_Vehicle
     WHERE plate_num = %s), %s, %s )
-    
+
+INSERT INTO Operations_Vehicle (customer_id, make, model, year, colour, VIN, plate_num, mileage, image) VALUES 
+((SELECT customer_id
+    FROM operations_customer
+    WHERE customer_name = %s), %s, %s, %s, %s, %s, %s, %s, %s)    
