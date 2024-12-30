@@ -294,8 +294,7 @@ def customer_enquiries():
             conn.close()
 
 def customer_invoice():
-    """Displays all existing customers with the cost of repairing their car
-    """
+    """Fetches all existing customers with the cost of repairing their car."""
     try:
         conn = connect_db()
         if conn:
@@ -309,13 +308,10 @@ def customer_invoice():
                        JOIN operations_customer AS C ON C.customer_id = V.customer_id"""
             cursor.execute(query)
             rows = cursor.fetchall()
-            if rows:
-                for row in rows:
-                    print(row)
-            else:
-                print("No invoices found.")
+            return rows
     except mysql.connector.Error as e:
         print(f"Database error: {e}")
+        return []
     finally:
         if conn:
             cursor.close()

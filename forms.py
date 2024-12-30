@@ -177,3 +177,181 @@ class PartForm(QDialog):
             "unit_price": self.unit_price_field.text(),
             "stock_quantity": self.stock_quantity_field.text()
         }
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QHBoxLayout, QPushButton
+
+class InvoiceForm(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Add Invoice")
+        self.layout = QVBoxLayout(self)
+
+        self.form_layout = QFormLayout()
+        self.invoice_id_input = QLineEdit()
+        self.jobpart_id_input = QLineEdit()
+        self.issued_date_input = QLineEdit()
+        self.sales_tax_input = QLineEdit()
+
+        self.form_layout.addRow("Invoice ID:", self.invoice_id_input)
+        self.form_layout.addRow("Job Part ID:", self.jobpart_id_input)
+        self.form_layout.addRow("Issued Date:", self.issued_date_input)
+        self.form_layout.addRow("Sales Tax:", self.sales_tax_input)
+
+        self.layout.addLayout(self.form_layout)
+
+        self.buttons_layout = QHBoxLayout()
+        self.save_button = QPushButton("Save")
+        self.save_button.clicked.connect(self.accept)
+        self.buttons_layout.addWidget(self.save_button)
+
+        self.layout.addLayout(self.buttons_layout)
+
+    def get_invoice_data(self):
+        return {
+            "invoice_id": self.invoice_id_input.text(),
+            "jobpart_id": self.jobpart_id_input.text(),
+            "issued_date": self.issued_date_input.text(),
+            "sales_tax": self.sales_tax_input.text()
+        }
+
+class UpdatePaymentStatusForm(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Update Payment Status")
+        self.layout = QVBoxLayout(self)
+
+        self.form_layout = QFormLayout()
+        self.invoice_id_input = QLineEdit()
+        self.new_status_input = QLineEdit()
+
+        self.form_layout.addRow("Invoice ID:", self.invoice_id_input)
+        self.form_layout.addRow("New Status:", self.new_status_input)
+
+        self.layout.addLayout(self.form_layout)
+
+        self.buttons_layout = QHBoxLayout()
+        self.update_button = QPushButton("Update")
+        self.update_button.clicked.connect(self.accept)
+        self.buttons_layout.addWidget(self.update_button)
+
+        self.layout.addLayout(self.buttons_layout)
+
+    def get_status_data(self):
+        return {
+            "invoice_id": self.invoice_id_input.text(),
+            "new_status": self.new_status_input.text()
+        }
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QHBoxLayout, QPushButton
+
+class VehicleForm(QDialog):
+    def __init__(self, parent=None, vehicle_data=None):
+        super().__init__(parent)
+        self.setWindowTitle("Add/Edit Vehicle")
+        self.layout = QVBoxLayout(self)
+
+        self.form_layout = QFormLayout()
+        self.customer_name_input = QLineEdit()
+        self.make_input = QLineEdit()
+        self.model_input = QLineEdit()
+        self.year_input = QLineEdit()
+        self.colour_input = QLineEdit()
+        self.vin_input = QLineEdit()
+        self.plate_num_input = QLineEdit()
+        self.mileage_input = QLineEdit()
+        self.image_input = QLineEdit()
+
+        self.form_layout.addRow("Customer Name:", self.customer_name_input)
+        self.form_layout.addRow("Make:", self.make_input)
+        self.form_layout.addRow("Model:", self.model_input)
+        self.form_layout.addRow("Year:", self.year_input)
+        self.form_layout.addRow("Colour:", self.colour_input)
+        self.form_layout.addRow("VIN:", self.vin_input)
+        self.form_layout.addRow("Plate Number:", self.plate_num_input)
+        self.form_layout.addRow("Mileage:", self.mileage_input)
+        self.form_layout.addRow("Image Path:", self.image_input)
+
+        self.layout.addLayout(self.form_layout)
+
+        self.buttons_layout = QHBoxLayout()
+        self.save_button = QPushButton("Save")
+        self.save_button.clicked.connect(self.accept)
+        self.buttons_layout.addWidget(self.save_button)
+
+        self.layout.addLayout(self.buttons_layout)
+
+        if vehicle_data:
+            self.customer_name_input.setText(vehicle_data["customer_id"])
+            self.make_input.setText(vehicle_data["make"])
+            self.model_input.setText(vehicle_data["model"])
+            self.year_input.setText(vehicle_data["year"])
+            self.colour_input.setText(vehicle_data["colour"])
+            self.vin_input.setText(vehicle_data["VIN"])
+            self.plate_num_input.setText(vehicle_data["plate_num"])
+            self.mileage_input.setText(vehicle_data["mileage"])
+            self.image_input.setText(vehicle_data["image"])
+
+    def get_vehicle_data(self):
+        return {
+            "customer_name": self.customer_name_input.text(),
+            "make": self.make_input.text(),
+            "model": self.model_input.text(),
+            "year": self.year_input.text(),
+            "colour": self.colour_input.text(),
+            "VIN": self.vin_input.text(),
+            "plate_num": self.plate_num_input.text(),
+            "mileage": self.mileage_input.text(),
+            "image": self.image_input.text()
+        }
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QLineEdit, QHBoxLayout, QPushButton, QDateEdit
+from PyQt6.QtCore import QDate
+
+class JobForm(QDialog):
+    def __init__(self, parent=None, job_data=None):
+        super().__init__(parent)
+        self.setWindowTitle("Add/Edit Job")
+        self.layout = QVBoxLayout(self)
+
+        self.form_layout = QFormLayout()
+        self.plate_num_input = QLineEdit()
+        self.problem_description_input = QLineEdit()
+        self.start_date_input = QDateEdit()
+        self.start_date_input.setCalendarPopup(True)
+        self.start_date_input.setDate(QDate.currentDate())
+        self.end_date_input = QDateEdit()
+        self.end_date_input.setCalendarPopup(True)
+        self.end_date_input.setDate(QDate.currentDate())
+        self.technician_input = QLineEdit()
+        self.status_input = QLineEdit()
+
+        self.form_layout.addRow("Vehicle Plate Number:", self.plate_num_input)
+        self.form_layout.addRow("Description:", self.problem_description_input)
+        self.form_layout.addRow("Start Date:", self.start_date_input)
+        self.form_layout.addRow("End Date:", self.end_date_input)
+        self.form_layout.addRow("Technician:", self.technician_input)
+        self.form_layout.addRow("Status:", self.status_input)
+
+        self.layout.addLayout(self.form_layout)
+
+        self.buttons_layout = QHBoxLayout()
+        self.save_button = QPushButton("Save")
+        self.save_button.clicked.connect(self.accept)
+        self.buttons_layout.addWidget(self.save_button)
+
+        self.layout.addLayout(self.buttons_layout)
+
+        if job_data:
+            self.plate_num_input.setText(job_data["plate_num"])
+            self.problem_description_input.setText(job_data["problem_description"])
+            self.start_date_input.setDate(QDate.fromString(job_data["start_date"], 'yyyy-MM-dd'))
+            self.end_date_input.setDate(QDate.fromString(job_data["end_date"], 'yyyy-MM-dd'))
+            self.technician_input.setText(job_data["technician"])
+            self.status_input.setText(job_data["status"])
+
+    def get_job_data(self):
+        return {
+            "plate_num": self.plate_num_input.text(),
+            "problem_description": self.problem_description_input.text(),
+            "start_date": self.start_date_input.date().toString('yyyy-MM-dd'),
+            "end_date": self.end_date_input.date().toString('yyyy-MM-dd'),
+            "technician": self.technician_input.text(),
+            "status": self.status_input.text()
+        }

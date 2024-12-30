@@ -5,11 +5,14 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap
-from forms import CustomerForm, EnquiryForm, InvoiceForm
+from forms import CustomerForm, EnquiryForm
 import main_Customer_db_functions as af
 import mysql.connector
 from technician_page import TechnicianPage
 from part_page import PartPage
+from main_invoice_page import InvoicePage  # Importing the main InvoicePage
+from vehicle_page import VehiclePage  # Importing the VehiclePage
+from job_page import JobPage # Importing the JobPage
 
 class AutoShopManagementApp(QMainWindow):
     def __init__(self):
@@ -34,16 +37,18 @@ class AutoShopManagementApp(QMainWindow):
         self.part_page = PartPage(self)
         self.stack.addWidget(self.part_page)
 
+        self.vehicle_page = VehiclePage(self)  # Initializing the VehiclePage
+        self.stack.addWidget(self.vehicle_page)
+
         self.enquiry_page = QWidget()
         self.create_enquiry_page()
         self.stack.addWidget(self.enquiry_page)
 
-        self.invoice_page = QWidget()
-        self.create_invoice_page()
+        self.invoice_page = InvoicePage(self)  # Initializing the main InvoicePage
         self.stack.addWidget(self.invoice_page)
 
-    # Remaining class methods
-        # Remaining class methods
+        self.job_page = JobPage(self) # Initializing the JobPage 
+        self.stack.addWidget(self.job_page) # Adding the JobPage to the stack
 
     def create_main_page(self):
         main_layout = QVBoxLayout(self.main_page)
@@ -65,11 +70,11 @@ class AutoShopManagementApp(QMainWindow):
 
         self.add_container(grid_layout, "👨‍🔧 Technician", 0, 0, self.show_technicians)
         self.add_container(grid_layout, "👤 Customers", 0, 1, self.show_customers)
-        self.add_container(grid_layout, "📋 Jobs", 0, 2)
+        self.add_container(grid_layout, "📋 Jobs", 0, 2, self.show_jobs)
 
-        self.add_container(grid_layout, "📊 Analytics", 1, 0)
+        self.add_container(grid_layout, "🚗 Vehicles", 1, 0, self.show_vehicles)  # Updated to Vehicles
         self.add_container(grid_layout, "⚙️ Parts", 1, 1, self.show_parts)
-        self.add_container(grid_layout, "💳 Invoices", 1, 2)
+        self.add_container(grid_layout, "💳 Invoices", 1, 2, self.show_invoices)  # Adding main invoice button
 
         main_layout.addLayout(grid_layout)
 
@@ -79,7 +84,7 @@ class AutoShopManagementApp(QMainWindow):
         # Vehicle Section (Left)
         self.vehicle_container = QLabel("🚗 Vehicles")
         self.vehicle_container.setStyleSheet("background-color: #D37F3A; font-size: 24px; border: 2px solid #8E5724;")
-        self.vehicle_container.setFixedHeight(300)
+        self.vehicle_container.setFixedHeight(400)
         self.vehicle_container.setAlignment(Qt.AlignmentFlag.AlignCenter)
         splitter.addWidget(self.vehicle_container)
 
@@ -189,7 +194,7 @@ class AutoShopManagementApp(QMainWindow):
 
         add_customer_btn.clicked.connect(self.add_customer)
         enquiry_btn.clicked.connect(self.show_enquiries)
-        customer_invoice_btn.clicked.connect(self.show_customer_invoices)
+        customer_invoice_btn.clicked.connect(self.show_customer_invoices)  # Linking the customer invoice button
 
         button_layout.addWidget(add_customer_btn)
         button_layout.addWidget(enquiry_btn)
@@ -222,7 +227,7 @@ class AutoShopManagementApp(QMainWindow):
                 for row_index, row_data in enumerate(rows):
                     self.customer_table.insertRow(row_index)
                     for column_index, data in enumerate(row_data):
-                        self.customer_table.setItem(row_index, column_index, QTableWidgetItem(str(data)))
+                                                self.customer_table.setItem(row_index, column_index, QTableWidgetItem(str(data)))
                     edit_button = QPushButton("Edit")
                     edit_button.clicked.connect(lambda _, ri=row_index: self.edit_customer(ri, self.customer_table))
                     self.customer_table.setCellWidget(row_index, 5, edit_button)
@@ -374,14 +379,35 @@ class AutoShopManagementApp(QMainWindow):
     def show_parts(self):
         self.stack.setCurrentWidget(self.part_page)
 
+    def show_vehicles(self):
+        self.stack.setCurrentWidget(self.vehicle_page)  # Show VehiclePage
+
     def show_enquiries(self):
         self.stack.setCurrentWidget(self.enquiry_page)
 
+    def show_jobs(self): 
+        self.stack.setCurrentWidget(self.job_page) # Show JobPage    
+
     def show_customer_invoices(self):
-        self.stack.setCurrentWidget(self.invoice_page)
+        rows = af.customer_invoice()  # Calling the correct function
+        self.populate_customer_invoices(rows)
 
     def show_main_page(self):
         self.stack.setCurrentWidget(self.main_page)
+
+    def show_invoices(self):
+        self.stack.setCurrentWidget(self.invoice_page)
+
+    def populate_customer_invoices(self, rows):
+        # Clear existing rows
+        self.customer_table.setRowCount(0)
+        if rows:
+            self.customer_table.setColumnCount(6)  # Adjust columns for customer invoices
+            self.customer_table.setHorizontalHeaderLabels(["Name", "Part used", "Number of parts used", "Part amount", "Job amount", "Total cost"])
+            for row_index, row_data in enumerate(rows):
+                self.customer_table.insertRow(row_index)
+                for column_index, data in enumerate(row_data):
+                    self.customer_table.setItem(row_index, column_index, QTableWidgetItem(str(data)))
 
     def add_customer(self):
         form = CustomerForm(self)
