@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QVBoxLayout, QWidget, QPushButton, QLabel, QHBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLineEdit, QFormLayout
+from PyQt6.QtWidgets import QVBoxLayout, QWidget, QPushButton, QHBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QLineEdit, QFormLayout
 import funtions.technician_db_functions as af  # Importing the technician database functions
 from forms import TechnicianForm  # Assuming you have a form for technicians
 import mysql.connector
