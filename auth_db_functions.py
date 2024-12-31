@@ -93,7 +93,7 @@ def change_password(username, current_password, new_password):
 
         #fetching current hashed password
         query = "SELECT password_hash FROM Users WHERE username = %s;"
-        cursor.execute(query, (username))
+        cursor.execute(query, (username,))
         user = cursor.fetchone()
 
         if user and bcrypt.checkpw(current_password.encode('utf-8'), user['password_hash'].encode('utf-8')):

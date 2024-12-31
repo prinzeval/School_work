@@ -1,8 +1,10 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QVBoxLayout, QWidget, QPushButton, QLabel, QLineEdit,
     QTableWidget, QTableWidgetItem, QHBoxLayout, QSplitter, QTabWidget,
-    QGridLayout, QStackedWidget, QHeaderView
+    QGridLayout, QStackedWidget, QHeaderView,
 )
+from PyQt6.QtGui import QAction
+
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap
 from forms import CustomerForm, EnquiryForm
@@ -13,10 +15,13 @@ from pages.part_page import PartPage
 from pages.main_invoice_page import InvoicePage  # Importing the main InvoicePage
 from pages.vehicle_page import VehiclePage  # Importing the VehiclePage
 from pages.job_page import JobPage # Importing the JobPage
+from change_password import ChangePasswordForm
 
 class AutoShopManagementApp(QMainWindow):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, logged_in_user,user_role, parent=None):
+        super().__init__(parent)
+        self.logged_in_user = logged_in_user  # Store the logged-in user
+        self.user_role = user_role # Store the user's role
         self.setWindowTitle("Auto Shop Management System")
         self.setGeometry(200, 200, 1200, 800)
 
@@ -27,28 +32,53 @@ class AutoShopManagementApp(QMainWindow):
         self.create_main_page()
         self.stack.addWidget(self.main_page)
 
-        self.customer_page = QWidget()
-        self.create_customer_page()
-        self.stack.addWidget(self.customer_page)
+        if self.user_role == "Admin":
+            self.customer_page = QWidget()
+            self.create_customer_page()
+            self.stack.addWidget(self.customer_page)
 
-        self.technician_page = TechnicianPage(self)
-        self.stack.addWidget(self.technician_page)
+            self.technician_page = TechnicianPage(self)
+            self.stack.addWidget(self.technician_page)
 
-        self.part_page = PartPage(self)
-        self.stack.addWidget(self.part_page)
+            self.part_page = PartPage(self)
+            self.stack.addWidget(self.part_page)
 
-        self.vehicle_page = VehiclePage(self)  # Initializing the VehiclePage
-        self.stack.addWidget(self.vehicle_page)
+            self.vehicle_page = VehiclePage(self)  # Initializing the VehiclePage
+            self.stack.addWidget(self.vehicle_page)
 
-        self.enquiry_page = QWidget()
-        self.create_enquiry_page()
-        self.stack.addWidget(self.enquiry_page)
+            self.enquiry_page = QWidget()
+            self.create_enquiry_page()
+            self.stack.addWidget(self.enquiry_page)
 
-        self.invoice_page = InvoicePage(self)  # Initializing the main InvoicePage
-        self.stack.addWidget(self.invoice_page)
+            self.invoice_page = InvoicePage(self)  # Initializing the main InvoicePage
+            self.stack.addWidget(self.invoice_page)
 
-        self.job_page = JobPage(self) # Initializing the JobPage 
-        self.stack.addWidget(self.job_page) # Adding the JobPage to the stack
+            self.job_page = JobPage(self)  # Initializing the JobPage
+            self.stack.addWidget(self.job_page)  # Adding the JobPage to the stack
+
+            self.create_menu_bar()  # Create the menu bar
+        elif self.user_role == "Technician":
+
+            self.vehicle_page = VehiclePage(self)  # Initializing the VehiclePage
+            self.stack.addWidget(self.vehicle_page)
+
+            self.job_page = JobPage(self)  # Initializing the JobPage
+            self.stack.addWidget(self.job_page)  # Adding the JobPage to the stack
+            
+    def create_menu_bar(self):
+        menubar = self.menuBar()
+        account_menu = menubar.addMenu('Account')
+
+        change_password_action = QAction('Change Password', self)
+        change_password_action.triggered.connect(self.show_change_password)
+
+        account_menu.addAction(change_password_action)
+
+    def show_change_password(self):
+        change_password_form = ChangePasswordForm(self.logged_in_user, self)
+        change_password_form.exec()
+
+    # ... other methods ...
 
     def create_main_page(self):
         main_layout = QVBoxLayout(self.main_page)
@@ -67,7 +97,7 @@ class AutoShopManagementApp(QMainWindow):
         # --- Grid Layout for 6 Main Containers ---
         grid_layout = QGridLayout()
         grid_layout.setSpacing(20)
-
+    
         self.add_container(grid_layout, "👨‍🔧 Technician", 0, 0, self.show_technicians)
         self.add_container(grid_layout, "👤 Customers", 0, 1, self.show_customers)
         self.add_container(grid_layout, "📋 Jobs", 0, 2, self.show_jobs)
@@ -113,7 +143,7 @@ class AutoShopManagementApp(QMainWindow):
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.next_vehicle_image)
-        self.timer.start(9000)
+        self.timer.start(2000)
 
     def create_data_table(self, table_name):
         table = QTableWidget()

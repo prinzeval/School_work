@@ -59,7 +59,7 @@ def main():
 
     login_form = LoginForm()  # Instantiate the login form
     if login_form.exec():  # Check if the login is successful
-        main_window = AutoShopManagementApp()
+        main_window = AutoShopManagementApp(login_form.logged_in_user, login_form.user_role)
         main_window.show()
         sys.exit(app.exec())
 
