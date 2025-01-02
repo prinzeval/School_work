@@ -1,10 +1,9 @@
 from PyQt6.QtWidgets import (
     QMainWindow, QVBoxLayout, QWidget, QPushButton, QLabel, QLineEdit,
     QTableWidget, QTableWidgetItem, QHBoxLayout, QSplitter, QTabWidget,
-    QGridLayout, QStackedWidget, QHeaderView,
+    QGridLayout, QStackedWidget, QHeaderView, QMessageBox
 )
 from PyQt6.QtGui import QAction
-
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QPixmap
 from forms import CustomerForm, EnquiryForm
@@ -12,16 +11,16 @@ import funtions.main_Customer_db_functions as af
 import mysql.connector
 from pages.technician_page import TechnicianPage
 from pages.part_page import PartPage
-from pages.main_invoice_page import InvoicePage  # Importing the main InvoicePage
-from pages.vehicle_page import VehiclePage  # Importing the VehiclePage
-from pages.job_page import JobPage # Importing the JobPage
+from pages.main_invoice_page import InvoicePage
+from pages.vehicle_page import VehiclePage
+from pages.job_page import JobPage
 from change_password import ChangePasswordForm
 
 class AutoShopManagementApp(QMainWindow):
-    def __init__(self, logged_in_user,user_role, parent=None):
+    def __init__(self, logged_in_user, user_role, parent=None):
         super().__init__(parent)
         self.logged_in_user = logged_in_user  # Store the logged-in user
-        self.user_role = user_role # Store the user's role
+        self.user_role = user_role  # Store the user's role
         self.setWindowTitle("Auto Shop Management System")
         self.setGeometry(200, 200, 1200, 800)
 
@@ -36,6 +35,10 @@ class AutoShopManagementApp(QMainWindow):
             self.customer_page = QWidget()
             self.create_customer_page()
             self.stack.addWidget(self.customer_page)
+
+            self.customer_invoice_page = QWidget()
+            self.create_customer_invoice_page()
+            self.stack.addWidget(self.customer_invoice_page)
 
             self.technician_page = TechnicianPage(self)
             self.stack.addWidget(self.technician_page)
@@ -58,13 +61,27 @@ class AutoShopManagementApp(QMainWindow):
 
             self.create_menu_bar()  # Create the menu bar
         elif self.user_role == "Technician":
-
             self.vehicle_page = VehiclePage(self)  # Initializing the VehiclePage
             self.stack.addWidget(self.vehicle_page)
 
             self.job_page = JobPage(self)  # Initializing the JobPage
             self.stack.addWidget(self.job_page)  # Adding the JobPage to the stack
             
+
+        self.protect_access(self.user_role)  # Protect access based on user role
+
+    def protect_access(self, role):
+        if role != "Admin":
+            self.add_container(self.grid_layout, "👨‍🔧 Technician", 0, 0, self.access_denied)
+            self.add_container(self.grid_layout, "👤 Customers", 0, 1, self.access_denied)
+            self.add_container(self.grid_layout, "📋 Jobs", 0, 2, self.show_jobs)
+            self.add_container(self.grid_layout, "🚗 Vehicles", 1, 0, self.show_vehicles)
+            self.add_container(self.grid_layout, "⚙️ Parts", 1, 1, self.access_denied)
+            self.add_container(self.grid_layout, "💳 Invoices", 1, 2, self.access_denied)
+
+    def access_denied(self):
+        QMessageBox.warning(self, "Access Denied", "Only the Admin has access to this section.")
+
     def create_menu_bar(self):
         menubar = self.menuBar()
         account_menu = menubar.addMenu('Account')
@@ -77,8 +94,6 @@ class AutoShopManagementApp(QMainWindow):
     def show_change_password(self):
         change_password_form = ChangePasswordForm(self.logged_in_user, self)
         change_password_form.exec()
-
-    # ... other methods ...
 
     def create_main_page(self):
         main_layout = QVBoxLayout(self.main_page)
@@ -95,25 +110,25 @@ class AutoShopManagementApp(QMainWindow):
         main_layout.addLayout(nav_bar)
 
         # --- Grid Layout for 6 Main Containers ---
-        grid_layout = QGridLayout()
-        grid_layout.setSpacing(20)
+        self.grid_layout = QGridLayout()  # Changed to self.grid_layout
+        self.grid_layout.setSpacing(20)
     
-        self.add_container(grid_layout, "👨‍🔧 Technician", 0, 0, self.show_technicians)
-        self.add_container(grid_layout, "👤 Customers", 0, 1, self.show_customers)
-        self.add_container(grid_layout, "📋 Jobs", 0, 2, self.show_jobs)
+        self.add_container(self.grid_layout, "👨‍🔧 Technician", 0, 0, self.show_technicians)
+        self.add_container(self.grid_layout, "👤 Customers", 0, 1, self.show_customers)
+        self.add_container(self.grid_layout, "📋 Jobs", 0, 2, self.show_jobs)
 
-        self.add_container(grid_layout, "🚗 Vehicles", 1, 0, self.show_vehicles)  # Updated to Vehicles
-        self.add_container(grid_layout, "⚙️ Parts", 1, 1, self.show_parts)
-        self.add_container(grid_layout, "💳 Invoices", 1, 2, self.show_invoices)  # Adding main invoice button
+        self.add_container(self.grid_layout, "🚗 Vehicles", 1, 0, self.show_vehicles)
+        self.add_container(self.grid_layout, "⚙️ Parts", 1, 1, self.show_parts)
+        self.add_container(self.grid_layout, "💳 Invoices", 1, 2, self.show_invoices)
 
-        main_layout.addLayout(grid_layout)
+        main_layout.addLayout(self.grid_layout)
 
         # --- Splitter for Vehicles and Table ---
         splitter = QSplitter(Qt.Orientation.Horizontal)
 
         # Vehicle Section (Left)
         self.vehicle_container = QLabel("🚗 Vehicles")
-        self.vehicle_container.setStyleSheet("background-color: #D37F3A; font-size: 24px; border: 2px solid #8E5724;")
+        self.vehicle_container.setStyleSheet("background-color: #3CB371; font-size: 24px; border: 2px solid #2E8B57;")
         self.vehicle_container.setFixedHeight(400)
         self.vehicle_container.setAlignment(Qt.AlignmentFlag.AlignCenter)
         splitter.addWidget(self.vehicle_container)
@@ -150,7 +165,7 @@ class AutoShopManagementApp(QMainWindow):
         headers = {
             "Operations_Customer": ["Customer ID", "Name", "Email", "Phone Number", "Address"],
             "Operations_Technician": ["Technician ID", "Name", "Specialty", "Hourly Rate"],
-            "Operations_Part": ["Part ID", "Part Name", "Part Number", "Unit Price", "Stock Quantity"],
+            "Operations_Part": ["Part ID", "Part Name", "Unit Price", "Stock Quantity"],
             "Operations_Job": ["Job ID", "Vehicle ID", "Technician ID", "Job Type", "Start Date", "End Date", "Job Amount", "Hours", "Status"]
         }
         
@@ -191,7 +206,6 @@ class AutoShopManagementApp(QMainWindow):
     def create_customer_page(self):
         layout = QVBoxLayout(self.customer_page)
 
-        # Back button to return to the main page
         back_button = QPushButton("🔙 Back")
         back_button.setFixedHeight(50)  # Adjust if needed
         back_button.clicked.connect(self.show_main_page)
@@ -216,15 +230,15 @@ class AutoShopManagementApp(QMainWindow):
             btn.setStyleSheet("""
                 font-size: 18px;
                 padding: 20px;
-                background-color: #D37F3A;
+                background-color: #3CB371;
                 color: white;
-                border: 2px solid #8E5724;
+                border: 2px solid #2E8B57;
                 font-weight: bold;
             """)
 
         add_customer_btn.clicked.connect(self.add_customer)
         enquiry_btn.clicked.connect(self.show_enquiries)
-        customer_invoice_btn.clicked.connect(self.show_customer_invoices)  # Linking the customer invoice button
+        customer_invoice_btn.clicked.connect(self.show_customer_invoices)
 
         button_layout.addWidget(add_customer_btn)
         button_layout.addWidget(enquiry_btn)
@@ -241,13 +255,10 @@ class AutoShopManagementApp(QMainWindow):
         layout.addWidget(self.customer_table)
         layout.setStretch(3, 1)  # Ensure the table occupies the remaining space
 
-        # Placeholder for populating table (remove database aspect)
-        self.populate_customers()
+        self.populate_customers()  # Populate customer table with data
 
     def populate_customers(self):
-        # Clear existing rows
         self.customer_table.setRowCount(0)
-
         try:
             conn = af.connect_db()
             if conn:
@@ -257,11 +268,29 @@ class AutoShopManagementApp(QMainWindow):
                 for row_index, row_data in enumerate(rows):
                     self.customer_table.insertRow(row_index)
                     for column_index, data in enumerate(row_data):
-                                                self.customer_table.setItem(row_index, column_index, QTableWidgetItem(str(data)))
+                        self.customer_table.setItem(row_index, column_index, QTableWidgetItem(str(data)))
+
+                    # Edit button
                     edit_button = QPushButton("Edit")
+                    edit_button.setStyleSheet("""
+                        background-color: #E1F4F3;
+                        font-size: 16px;
+                        border: 2px solid #8E5724;
+                        border-radius: 5px;
+                        color: #000000;
+                    """)
                     edit_button.clicked.connect(lambda _, ri=row_index: self.edit_customer(ri, self.customer_table))
                     self.customer_table.setCellWidget(row_index, 5, edit_button)
+
+                    # Delete button
                     delete_button = QPushButton("Delete")
+                    delete_button.setStyleSheet("""
+                        background-color: #E1F4F3;
+                        font-size: 16px;
+                        border: 2px solid #8E5724;
+                        border-radius: 5px;
+                        color: #000000;
+                    """)
                     delete_button.clicked.connect(lambda _, ri=row_index: self.delete_customer(ri, self.customer_table))
                     self.customer_table.setCellWidget(row_index, 6, delete_button)
         except mysql.connector.Error as e:
@@ -271,6 +300,64 @@ class AutoShopManagementApp(QMainWindow):
                 cursor.close()
                 conn.close()
 
+    def create_customer_invoice_page(self):
+        layout = QVBoxLayout(self.customer_invoice_page)
+
+        # Back button to return to the customer page
+        back_button = QPushButton("🔙 Back")
+        back_button.clicked.connect(self.show_customers)
+        layout.addWidget(back_button)
+
+        nav_bar = QHBoxLayout()
+        nav_bar.addWidget(QLabel("💲 Customer Invoices"))
+        nav_bar.addStretch(1)
+        layout.addLayout(nav_bar)
+
+        self.invoice_table = QTableWidget()
+        self.invoice_table.setColumnCount(6)
+        self.invoice_table.setHorizontalHeaderLabels(["Name", "Part used", "Number of parts used", "Part amount", "Job amount", "Total cost"])
+        self.invoice_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.invoice_table.horizontalHeader().setStretchLastSection(True)
+        layout.addWidget(self.invoice_table)
+        layout.setStretch(2, 1)  # Ensure the table occupies the remaining space
+
+        # Populate invoices when creating the invoice page
+        rows = self.fetch_customer_invoices()
+        self.populate_customer_invoices(rows)
+
+    def fetch_customer_invoices(self):
+        try:
+            conn = af.connect_db()
+            if conn:
+                cursor = conn.cursor()
+                query = """
+                SELECT C.name AS Customer_Name, P.part_name AS Part_Used, JP.quantity_part_used AS Number_of_Parts_Used, 
+                       JP.part_amount AS Part_Amount, J.job_amount AS Job_Amount, JP.total_cost AS Total_Cost 
+                FROM operations_jobpart AS JP
+                JOIN operations_job AS J ON J.job_id = JP.job_id
+                JOIN operations_part AS P ON P.part_id = JP.part_id
+                JOIN operations_vehicle AS V ON V.vehicle_id = J.vehicle_id
+                JOIN operations_customer AS C ON C.customer_id = V.customer_id
+                """
+                cursor.execute(query)
+                rows = cursor.fetchall()
+                return rows
+        except mysql.connector.Error as e:
+            print(f"Database error: {e}")
+            return []
+        finally:
+            if conn:
+                cursor.close()
+                conn.close()
+
+    def populate_customer_invoices(self, rows):
+        self.invoice_table.setRowCount(0)
+        if rows:
+            for row_index, row_data in enumerate(rows):
+                self.invoice_table.insertRow(row_index)
+                for column_index, data in enumerate(row_data):
+                    self.invoice_table.setItem(row_index, column_index, QTableWidgetItem(str(data)))
+
     def create_enquiry_page(self):
         layout = QVBoxLayout(self.enquiry_page)
 
@@ -279,13 +366,11 @@ class AutoShopManagementApp(QMainWindow):
         back_button.clicked.connect(self.show_customers)
         layout.addWidget(back_button)
 
-        # Navigation bar
         nav_bar = QHBoxLayout()
         nav_bar.addWidget(QLabel("🕒 Enquiries"))
         nav_bar.addStretch(1)
         layout.addLayout(nav_bar)
 
-        # Enquiry table
         self.enquiry_table = QTableWidget()
         self.enquiry_table.setColumnCount(5)
         self.enquiry_table.setHorizontalHeaderLabels(["Name", "Plate number", "Enquiry Date", "Problem Description", "Technician assigned"])
@@ -294,30 +379,28 @@ class AutoShopManagementApp(QMainWindow):
         layout.addWidget(self.enquiry_table)
         layout.setStretch(2, 1)  # Ensure the table occupies the remaining space
 
-        # Placeholder for populating table (remove database aspect)
         self.populate_enquiries()
 
     def populate_enquiries(self):
-        # Clear existing rows
         self.enquiry_table.setRowCount(0)
-
         try:
             conn = af.connect_db()
             if conn:
                 cursor = conn.cursor()
-                query = """WITH name_plate_num(Customer_Name, Plate_Number) AS
-                            (SELECT DISTINCT C.name,  V.plate_num
-                                                        FROM operations_customer AS C
-                            JOIN operations_vehicle AS V ON C.customer_id = V.customer_id),
-                        mech_job(Enquiry_date, Problem_Description, Technician_Assigned, Plate_Number) AS
-                            (SELECT J.start_date, J.job_type, T.name,  V.plate_num
-                            FROM operations_job AS J
-                            JOIN Operations_Technician AS T ON J.technician_id = T.technician_id
-                            JOIN operations_vehicle AS V ON J.vehicle_id = V.vehicle_id)
-                        SELECT Customer_Name, NPN.Plate_Number AS Plate_Number, Enquiry_date, Problem_Description, Technician_Assigned
-                        FROM name_plate_num AS NPN
-                        JOIN mech_job AS MJ ON NPN.Plate_Number = MJ.Plate_Number
-                    """
+                query = """
+                WITH name_plate_num(Customer_Name, Plate_Number) AS
+                    (SELECT DISTINCT C.name, V.plate_num
+                     FROM operations_customer AS C
+                     JOIN operations_vehicle AS V ON C.customer_id = V.customer_id),
+                     mech_job(Enquiry_date, Problem_Description, Technician_Assigned, Plate_Number) AS
+                     (SELECT J.start_date, J.job_type, T.name, V.plate_num
+                      FROM operations_job AS J
+                      JOIN Operations_Technician AS T ON J.technician_id = T.technician_id
+                      JOIN operations_vehicle AS V ON J.vehicle_id = V.vehicle_id)
+                SELECT Customer_Name, NPN.Plate_Number AS Plate_Number, Enquiry_date, Problem_Description, Technician_Assigned
+                FROM name_plate_num AS NPN
+                JOIN mech_job AS MJ ON NPN.Plate_Number = MJ.Plate_Number
+                """
                 cursor.execute(query)
                 rows = cursor.fetchall()
                 for row_index, row_data in enumerate(rows):
@@ -334,18 +417,15 @@ class AutoShopManagementApp(QMainWindow):
     def create_invoice_page(self):
         layout = QVBoxLayout(self.invoice_page)
 
-        # Back button to return to the customer page
         back_button = QPushButton("🔙 Back")
         back_button.clicked.connect(self.show_customers)
         layout.addWidget(back_button)
 
-        # Navigation bar
         nav_bar = QHBoxLayout()
         nav_bar.addWidget(QLabel("💲 Customer Invoices"))
         nav_bar.addStretch(1)
         layout.addLayout(nav_bar)
 
-        # Invoice table
         self.invoice_table = QTableWidget()
         self.invoice_table.setColumnCount(6)
         self.invoice_table.setHorizontalHeaderLabels(["Name", "Part used", "Number of parts used", "Part amount", "Job amount", "Total cost"])
@@ -354,36 +434,17 @@ class AutoShopManagementApp(QMainWindow):
         layout.addWidget(self.invoice_table)
         layout.setStretch(2, 1)  # Ensure the table occupies the remaining space
 
-        # Placeholder for populating table (remove database aspect)
-        self.populate_invoices()
+        # Populate invoices when creating the invoice page
+        rows = self.fetch_customer_invoices()
+        self.populate_customer_invoices(rows)
 
-    def populate_invoices(self):
-        # Clear existing rows
+    def populate_customer_invoices(self, rows):
         self.invoice_table.setRowCount(0)
-
-        try:
-            conn = af.connect_db()
-            if conn:
-                cursor = conn.cursor()
-                query = """SELECT C.name AS Customer_Name, P.part_name AS Part_Used, JP.quantity_part_used AS Number_of_Parts_Used, 
-                           JP.part_amount AS Part_Amount, J.job_amount AS Job_Amount, JP.total_cost AS Total_Cost 
-                           FROM operations_jobpart AS JP
-                           JOIN operations_job AS J ON J.job_id = JP.job_id
-                           JOIN operations_part AS P ON P.part_id = JP.part_id
-                           JOIN operations_vehicle AS V ON V.vehicle_id = J.vehicle_id
-                           JOIN operations_customer AS C ON C.customer_id = V.customer_id"""
-                cursor.execute(query)
-                rows = cursor.fetchall()
-                for row_index, row_data in enumerate(rows):
-                    self.invoice_table.insertRow(row_index)
-                    for column_index, data in enumerate(row_data):
-                        self.invoice_table.setItem(row_index, column_index, QTableWidgetItem(str(data)))
-        except mysql.connector.Error as e:
-            print(f"Database error: {e}")
-        finally:
-            if conn:
-                cursor.close()
-                conn.close()
+        if rows:
+            for row_index, row_data in enumerate(rows):
+                self.invoice_table.insertRow(row_index)
+                for column_index, data in enumerate(row_data):
+                    self.invoice_table.setItem(row_index, column_index, QTableWidgetItem(str(data)))
 
     def add_container(self, layout, text, row, col, on_click=None):
         container = QPushButton(text)
@@ -391,9 +452,9 @@ class AutoShopManagementApp(QMainWindow):
         container.setStyleSheet("""
             font-size: 18px;
             padding: 20px;
-            background-color: #D37F3A;
+            background-color: #3CB371;
             color: white;
-            border: 2px solid #8E5724;
+            border: 2px solid #2E8B57;
             font-weight: bold;
         """)
         if on_click:
@@ -403,6 +464,9 @@ class AutoShopManagementApp(QMainWindow):
     def show_customers(self):
         self.stack.setCurrentWidget(self.customer_page)
 
+    def show_customer_invoices(self):
+        self.stack.setCurrentWidget(self.customer_invoice_page)
+
     def show_technicians(self):
         self.stack.setCurrentWidget(self.technician_page)
 
@@ -410,34 +474,19 @@ class AutoShopManagementApp(QMainWindow):
         self.stack.setCurrentWidget(self.part_page)
 
     def show_vehicles(self):
-        self.stack.setCurrentWidget(self.vehicle_page)  # Show VehiclePage
+        self.stack.setCurrentWidget(self.vehicle_page)
 
     def show_enquiries(self):
         self.stack.setCurrentWidget(self.enquiry_page)
 
-    def show_jobs(self): 
-        self.stack.setCurrentWidget(self.job_page) # Show JobPage    
-
-    def show_customer_invoices(self):
-        rows = af.customer_invoice()  # Calling the correct function
-        self.populate_customer_invoices(rows)
+    def show_jobs(self):
+        self.stack.setCurrentWidget(self.job_page)
 
     def show_main_page(self):
         self.stack.setCurrentWidget(self.main_page)
 
     def show_invoices(self):
         self.stack.setCurrentWidget(self.invoice_page)
-
-    def populate_customer_invoices(self, rows):
-        # Clear existing rows
-        self.customer_table.setRowCount(0)
-        if rows:
-            self.customer_table.setColumnCount(6)  # Adjust columns for customer invoices
-            self.customer_table.setHorizontalHeaderLabels(["Name", "Part used", "Number of parts used", "Part amount", "Job amount", "Total cost"])
-            for row_index, row_data in enumerate(rows):
-                self.customer_table.insertRow(row_index)
-                for column_index, data in enumerate(row_data):
-                    self.customer_table.setItem(row_index, column_index, QTableWidgetItem(str(data)))
 
     def add_customer(self):
         form = CustomerForm(self)
@@ -492,3 +541,4 @@ class AutoShopManagementApp(QMainWindow):
         self.table_tabs.removeTab(3)
         self.table_tabs.insertTab(3, table, "Jobs")
         self.table_tabs.setCurrentWidget(table)
+

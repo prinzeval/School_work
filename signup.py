@@ -34,3 +34,19 @@ class SignUpForm(QDialog):
         role = self.role_input.currentText()
         add_new_user(username, password, role)
         self.accept()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

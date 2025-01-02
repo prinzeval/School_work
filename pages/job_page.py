@@ -21,7 +21,7 @@ class JobPage(QWidget):
         back_button.setStyleSheet("""
             font-size: 18px;
             padding: 10px;
-            background-color: #D37F3A;
+            background-color: #3CB371;
             color: white;
             border: 2px solid #8E5724;
             font-weight: bold;
@@ -33,7 +33,7 @@ class JobPage(QWidget):
             btn.setStyleSheet("""
                 font-size: 18px;
                 padding: 20px;
-                background-color: #D37F3A;
+                background-color: #3CB371;
                 color: white;
                 border: 2px solid #8E5724;
                 font-weight: bold;
@@ -119,7 +119,7 @@ class JobsInProgressPage(QWidget):
         back_button.setStyleSheet("""
             font-size: 18px;
             padding: 10px;
-            background-color: #D37F3A;
+            background-color: #3CB371;
             color: white;
             border: 2px solid #8E5724;
             font-weight: bold;
@@ -167,7 +167,7 @@ class CompletedJobsPage(QWidget):
         back_button.setStyleSheet("""
             font-size: 18px;
             padding: 10px;
-            background-color: #D37F3A;
+            background-color: #3CB371;
             color: white;
             border: 2px solid #8E5724;
             font-weight: bold;
@@ -215,7 +215,7 @@ class FinishJobPage(QWidget):
         back_button.setStyleSheet("""
             font-size: 18px;
             padding: 10px;
-            background-color: #D37F3A;
+            background-color: #3CB371;
             color: white;
             border: 2px solid #8E5724;
             font-weight: bold;
@@ -244,7 +244,7 @@ class FinishJobPage(QWidget):
         approve_button.setStyleSheet("""
             font-size: 18px;
             padding: 10px;
-            background-color: #D37F3A;
+            background-color: #3CB371;
             color: white;
             border: 2px solid #8E5724;
             font-weight: bold;

@@ -22,9 +22,9 @@ class PartPage(QWidget):
             btn.setStyleSheet("""
                 font-size: 18px;
                 padding: 20px;
-                background-color: #D37F3A;
+                background-color: #3CB371;
                 color: white;
-                border: 2px solid #8E5724;
+                border: 2px solid #2E8B57;
                 font-weight: bold;
             """)
 
@@ -61,9 +61,24 @@ class PartPage(QWidget):
                     for column_index, data in enumerate(row_data):
                         self.part_table.setItem(row_index, column_index, QTableWidgetItem(str(data)))
                     edit_button = QPushButton("Edit")
+                    edit_button.setStyleSheet(""" 
+                        background-color: #E1F4F3; 
+                        font-size: 16px;  
+                        border: 2px solid #2E8B57;
+                        border-radius: 5px; 
+                        color: black; 
+                        """)
+
                     edit_button.clicked.connect(lambda _, ri=row_index: self.edit_part(ri))
                     self.part_table.setCellWidget(row_index, 4, edit_button)
                     delete_button = QPushButton("Delete")
+                    delete_button.setStyleSheet("""
+                         background-color: #E1F4F3; 
+                        font-size: 16px;
+                        border: 2px solid #2E8B57; 
+                        border-radius: 5px; 
+                        color: black; 
+                        """)
                     delete_button.clicked.connect(lambda _, ri=row_index: self.delete_part(ri))
                     self.part_table.setCellWidget(row_index, 5, delete_button)
         except Exception as e:
@@ -119,8 +134,8 @@ class PartsLowInStockPage(QWidget):
 
         # Part table
         self.part_table = QTableWidget()
-        self.part_table.setColumnCount(6)
-        self.part_table.setHorizontalHeaderLabels(["Part ID", "Part Name", "Unit Price", "Stock Quantity", "Edit", "Delete"])
+        self.part_table.setColumnCount(4)
+        self.part_table.setHorizontalHeaderLabels(["Part ID", "Part Name", "Unit Price", "Stock Quantity"])
         self.part_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
         self.part_table.horizontalHeader().setStretchLastSection(True)
 
@@ -141,35 +156,8 @@ class PartsLowInStockPage(QWidget):
                     self.part_table.insertRow(row_index)
                     for column_index, data in enumerate(row_data):
                         self.part_table.setItem(row_index, column_index, QTableWidgetItem(str(data)))
-                    edit_button = QPushButton("Edit")
-                    edit_button.clicked.connect(lambda _, ri=row_index: self.edit_part(ri))
-                    self.part_table.setCellWidget(row_index, 4, edit_button)
-                    delete_button = QPushButton("Delete")
-                    delete_button.clicked.connect(lambda _, ri=row_index: self.delete_part(ri))
-                    self.part_table.setCellWidget(row_index, 5, delete_button)
         except Exception as e:
             print(f"Error populating parts low in stock: {e}")
-
-    def edit_part(self, row_index):
-        part_id = self.part_table.item(row_index, 0).text()
-        part_data = {
-            "part_name": self.part_table.item(row_index, 1).text(),
-            "unit_price": self.part_table.item(row_index, 2).text(),
-            "stock_quantity": self.part_table.item(row_index, 3).text(),
-        }
-
-        form = PartForm(self, part_data)
-        if form.exec():
-            updated_data = form.get_part_data()
-            af.edit_part_name(part_id, updated_data['part_name'])
-            af.edit_unit_price(part_id, updated_data['unit_price'])
-            af.edit_part_stock_quantity(part_id, updated_data['stock_quantity'])
-            self.populate_parts_low_in_stock()
-
-    def delete_part(self, row_index):
-        part_id = self.part_table.item(row_index, 0).text()
-        af.delete_part(part_id)
-        self.populate_parts_low_in_stock()
 
     def show_add_part_page(self):
         self.main_app.stack.setCurrentWidget(self.main_app.part_page)
