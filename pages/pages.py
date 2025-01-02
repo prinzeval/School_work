@@ -112,7 +112,7 @@ class AutoShopManagementApp(QMainWindow):
         # --- Grid Layout for 6 Main Containers ---
         self.grid_layout = QGridLayout()  # Changed to self.grid_layout
         self.grid_layout.setSpacing(20)
-    
+
         self.add_container(self.grid_layout, "👨‍🔧 Technician", 0, 0, self.show_technicians)
         self.add_container(self.grid_layout, "👤 Customers", 0, 1, self.show_customers)
         self.add_container(self.grid_layout, "📋 Jobs", 0, 2, self.show_jobs)
@@ -123,42 +123,45 @@ class AutoShopManagementApp(QMainWindow):
 
         main_layout.addLayout(self.grid_layout)
 
-        # --- Splitter for Vehicles and Table ---
-        splitter = QSplitter(Qt.Orientation.Horizontal)
+        # Only show the table section if the user is not a technician
+        if self.user_role != "Technician":
+            # --- Splitter for Vehicles and Table ---
+            splitter = QSplitter(Qt.Orientation.Horizontal)
 
-        # Vehicle Section (Left)
-        self.vehicle_container = QLabel("🚗 Vehicles")
-        self.vehicle_container.setStyleSheet("background-color: #3CB371; font-size: 24px; border: 2px solid #2E8B57;")
-        self.vehicle_container.setFixedHeight(400)
-        self.vehicle_container.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        splitter.addWidget(self.vehicle_container)
+            # Vehicle Section (Left)
+            self.vehicle_container = QLabel("🚗 Vehicles")
+            self.vehicle_container.setStyleSheet("background-color: #3CB371; font-size: 24px; border: 2px solid #2E8B57;")
+            self.vehicle_container.setFixedHeight(400)
+            self.vehicle_container.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            splitter.addWidget(self.vehicle_container)
 
-        # Table Section (Right)
-        table_section = QWidget()
-        table_layout = QVBoxLayout(table_section)
+            # Table Section (Right)
+            table_section = QWidget()
+            table_layout = QVBoxLayout(table_section)
 
-        self.table_tabs = QTabWidget()
-        self.table_tabs.setFixedHeight(300)
-        self.table_tabs.addTab(self.create_data_table("Operations_Customer"), "Customers")
-        self.table_tabs.addTab(self.create_data_table("Operations_Technician"), "Technicians")
-        self.table_tabs.addTab(self.create_data_table("Operations_Part"), "Parts")
-        self.table_tabs.addTab(self.create_data_table("Operations_Job"), "Jobs")
+            self.table_tabs = QTabWidget()
+            self.table_tabs.setFixedHeight(300)
+            self.table_tabs.addTab(self.create_data_table("Operations_Customer"), "Customers")
+            self.table_tabs.addTab(self.create_data_table("Operations_Technician"), "Technicians")
+            self.table_tabs.addTab(self.create_data_table("Operations_Part"), "Parts")
+            self.table_tabs.addTab(self.create_data_table("Operations_Job"), "Jobs")
 
-        table_layout.addWidget(self.table_tabs)
-        splitter.addWidget(table_section)
+            table_layout.addWidget(self.table_tabs)
+            splitter.addWidget(table_section)
 
-        splitter.setSizes([600, 600])
+            splitter.setSizes([600, 600])
 
-        main_layout.addWidget(splitter)
+            main_layout.addWidget(splitter)
 
-        # Start image carousel
-        self.vehicle_images = af.fetch_vehicle_images()
-        self.current_image_index = 0
-        self.update_vehicle_image()
+            # Start image carousel
+            self.vehicle_images = af.fetch_vehicle_images()
+            self.current_image_index = 0
+            self.update_vehicle_image()
 
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.next_vehicle_image)
-        self.timer.start(2000)
+            self.timer = QTimer(self)
+            self.timer.timeout.connect(self.next_vehicle_image)
+            self.timer.start(2000)
+
 
     def create_data_table(self, table_name):
         table = QTableWidget()
