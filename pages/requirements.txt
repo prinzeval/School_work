@@ -1,0 +1,3 @@
+pyQt6
+bcrypt
+mysql-connector-python
